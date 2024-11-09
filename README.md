@@ -23,6 +23,7 @@ The Method is shown below
             if (checker != null) {
                 Pips.get(destinationPip).addChecker(checker); // Add checker to destination pip
                 System.out.println("Moved checker from pip " + fromPip + " to pip " + (destinationPip + 1));
+                changeTurn(); // Update turn after a successful move
                 return true; // Move was successful
             } else {
                 //Error Message
