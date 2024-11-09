@@ -41,8 +41,10 @@ Method is shown below.
 
 Method code
 
- // Removes a checker from the pip and returns it.
-    // Called in the moveChecker method in the Board class.
+ /* ***For the Pip CLASS***
+    // Removes checker and clalled by the moveChecker method
+    // 
+     */
     public Checker removeChecker() {
         if (!Checkers.isEmpty()) {
             return Checkers.removeLast(); // Removes the last checker in the vector
