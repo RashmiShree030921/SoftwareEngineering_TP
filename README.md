@@ -42,7 +42,7 @@ Method is shown below.
 Method code
 
 
-/* *For the Pip CLASS***
+/*For the Pip CLASS***
     // Removes checker and clalled by the moveChecker method
     // 
      */
