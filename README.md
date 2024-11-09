@@ -37,19 +37,18 @@ The Method is shown below
 
 ## Remove Checker
 The remove checker is in the pip class and removes the checker
-Code is shown below. 
+Method is shown below. 
+
+Method code
 
  // Removes a checker from the pip and returns it.
     // Called in the moveChecker method in the Board class.
-    // explanation here https://www.geeksforgeeks.org/java-util-vector-remove-method-in-java/
     public Checker removeChecker() {
         if (!Checkers.isEmpty()) {
             return Checkers.removeLast(); // Removes the last checker in the vector
         }
         return null; // Returns null if no checker to remove
     }
-
-
 
 
     
