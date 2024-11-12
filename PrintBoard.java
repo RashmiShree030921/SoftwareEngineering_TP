@@ -59,7 +59,7 @@ public class PrintBoard {
             // Organizing the top numbers (12-23)
             for (int i = 11; i >= 0 ; i--) {
                 if (i == 6) {
-                    numBorderTop.append("    "); // Corrected to numBorderTop
+                    numBorderTop.append("    "); 
                 }
                 numBorderTop.append(String.format("%2d ", i)); // Fixed width for all numbers
                 checkers[i] = pips.get(i).Display();
@@ -134,7 +134,7 @@ public class PrintBoard {
         } catch (NumberFormatException e) {
             checkerCount = 0; // Default to 0 if error occurs
         }
-        String checkerColor = checkerDisplay.substring(1, 2); // Default to space if color missing
+        String checkerColor = checkerDisplay.substring(1, 2); // Default to space if colour missing
 
         // Print checker color if exists for this row, otherwise print spaces
         if (checkerCount >= row) {
