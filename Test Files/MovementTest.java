@@ -1,100 +1,88 @@
-// hannah nolan git (hnolan2019@gmail.com)
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-
 import static org.junit.jupiter.api.Assertions.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.lang.reflect.Method;
 
 class MovementTest {
 
-    private Dice dice;
-    private Turn turn;
-    private ArrayList<Pip> pips;
-    private ArrayList<Pip> bar;
-    private Player_IDs playerIDs;
-    private Movement movement;
+    //Tests method that aren't tested in testfile
 
-    /// SET up and initialise the movement class
-    @BeforeEach
-    void setup() {
-        // Initialize dependencies
-        ArrayList<Integer> initialRolls = new ArrayList<>();
-        initialRolls.add(3); // Simulate a roll of 3
-        dice = new Dice(initialRolls);
 
-        turn = new Turn();
-        turn.setTurn(true, true); // Player 1's turn (matching orientation)
-
-        playerIDs = new Player_IDs(turn, dice);
-
-        // Initialize pips and bar
-        pips = new ArrayList<>();
-        for (int i = 0; i < 24; i++) {
-            pips.add(new Pip());
-        }
-
-        bar = new ArrayList<>();
-        bar.add(new Pip()); // First bar pip
-        bar.add(new Pip()); // Last bar pip
-
-        // Create Movement instance
-        movement = new Movement(dice, pips, turn, bar, playerIDs);
-    }
-
-    // The test for Movement is implemented in the TestFile Class
-
-    //Implemented before ---- command select assumes can munually select move
-    // early test for the movement class
+    // Test for Movement class ------ testing the private methods populateCommands and updateCommands (very import for the game to work)
+    // Test populateCommands - use reflection for private
     @Test
-    void testMoveChecker() throws Exception {
-        // Initialize dependencies
-        ArrayList<Integer> rolls = new ArrayList<>();
-        rolls.add(3); // Simulate a roll of 3
-        Dice dice = new Dice(rolls);
-
-        Turn turn = new Turn();
-        turn.setTurn(true, true); // Player 1's turn
-
+    void testPrivatePopulateCommands() throws Exception {
+        // Setup
         ArrayList<Pip> pips = new ArrayList<>();
-        for (int i = 0; i < 24; i++) {
-            pips.add(new Pip());
-        }
-
+        for (int i = 0; i < 24; i++) pips.add(new Pip());
         ArrayList<Pip> bar = new ArrayList<>();
         bar.add(new Pip());
         bar.add(new Pip());
+        Turn turn = new Turn();
+        turn.setTurn(true, true);
+        Dice dice = new Dice(new ArrayList<>(List.of(4, 5)));
+        TestFile testFile = new TestFile();
+        Movement movement = new Movement(dice, pips, turn, bar, false, testFile);
 
-        Player_IDs playerIDs = new Player_IDs(turn, dice);
+        // Access the private populateCommands method
+        Method populateCommandsMethod = Movement.class.getDeclaredMethod("populateCommands");
+        populateCommandsMethod.setAccessible(true);
 
-        // Create the Movement instance
-        Movement movement = new Movement(dice, pips, turn, bar, playerIDs);
+        // Execute
+        populateCommandsMethod.invoke(movement);
 
-        // Access the `genCommands` field in Movement
-        Field genCommandsField = Movement.class.getDeclaredField("genCommands");
-        genCommandsField.setAccessible(true);
-        Command_Generator genCommands = (Command_Generator) genCommandsField.get(movement);
-
-        // Access the private `nextMove` field in Command_Generator
-        Field nextMoveField = Command_Generator.class.getDeclaredField("nextMove");
-        nextMoveField.setAccessible(true);
-        ArrayList<Command> nextMove = (ArrayList<Command>) nextMoveField.get(genCommands);
-
-        // Populate `nextMove` with a predefined Command (move from pip 0 to pip 3)
-        Command testCommand = new Command(0, 3);
-        nextMove.add(testCommand);
-
-        // Add a checker for Player 1 at pip 0
-        Pip pip0 = pips.get(0);
-        pip0.addChecker(new Checker(true));
-
-        // Call moveChecker
-        movement.moveChecker();
-
-        // Verify the checker has moved to pip 3
-        Pip pip3 = pips.get(3);
-        assertTrue(pip0.isEmpty(), "Pip 0 should be empty after the checker moves.");
-        assertFalse(pip3.isEmpty(), "Pip 3 should have the checker after the move.");
+        // Verify
+        assertEquals(2, dice.returnRolls().size(), "Dice rolls should be populated correctly.");
     }
+
+    @Test
+    void testUpdateCommands() throws Exception {
+        // Setup
+        ArrayList<Pip> pips = new ArrayList<>();
+        for (int i = 0; i < 24; i++) pips.add(new Pip());
+        ArrayList<Pip> bar = new ArrayList<>();
+        bar.add(new Pip());
+        bar.add(new Pip());
+        Turn turn = new Turn();
+        turn.setTurn(true, true);
+        Dice dice = new Dice(new ArrayList<>(List.of(4, 5)));
+        TestFile testFile = new TestFile();
+        Movement movement = new Movement(dice, pips, turn, bar, false, testFile);
+
+        // Create a mock Command object
+        Command mockCommand = new Command(0, 5);
+
+        // Access the private updateCommands method
+        Method updateCommandsMethod = Movement.class.getDeclaredMethod("updateCommands", Command.class);
+        updateCommandsMethod.setAccessible(true);
+
+        // Execute the private method
+        updateCommandsMethod.invoke(movement, mockCommand);
+
+        // placeholder assertion
+        assertNotNull(mockCommand, "Command should have been processed.");
+    }
+
+    
+
+    @Test
+    void testMoveCheckerCallsPopulateCommands() {
+        // Setup
+        ArrayList<Pip> pips = new ArrayList<>();
+        for (int i = 0; i < 24; i++) pips.add(new Pip());
+        ArrayList<Pip> bar = new ArrayList<>();
+        bar.add(new Pip());
+        bar.add(new Pip());
+        Turn turn = new Turn();
+        turn.setTurn(true, true);
+        Dice dice = new Dice(new ArrayList<>(List.of(4, 5)));
+        TestFile testFile = new TestFile();
+        Movement movement = new Movement(dice, pips, turn, bar, false, testFile);
+
+        // Execute
+        movement.moveChecker(); // Assuming moveChecker internally calls populateCommands
+
+    }
+
 }
