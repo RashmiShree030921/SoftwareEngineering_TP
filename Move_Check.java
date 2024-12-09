@@ -36,23 +36,30 @@ public class Move_Check
     public boolean returnBarFlag() { return barFlag; }
     public void setBarFlag(boolean set) { barFlag = set; }
 
-    public int convert2AlterIndex(int i) { return (((num_pips-1-i)+num_pips)%num_pips); }
+   public int convert2AlterIndex(int i) { return (((num_pips-1-i)+num_pips)%num_pips); }
     //checks if we can start moving checkers off the board
     // i.e. check if there are any checkers of this colours outside home area
     public boolean homeCheck()
     {
+        boolean turnFlag = turn.returnTurn() == turn.returnOrientation();
+
+        if(turnFlag && !Bar.getFirst().isEmpty())
+            return false;
+        else if(!Bar.getLast().isEmpty())
+            return false;
+
         for(int i =0; i<num_pips; i++)
         {
             if(!Pips.get(i).isEmpty())
                 if (Pips.get(i).returnColour() == turn.returnTurn())
                 {
-                    if (turn.returnTurn() == turn.returnOrientation())
+                    if (turnFlag)
                     {
                         if (i < 18)
                             return false;
                     }
                     else {
-                        if (i > 5)
+                        if (i > 5 && Bar.getLast().isEmpty())
                             return false;
                     }
 
@@ -66,6 +73,8 @@ public class Move_Check
     // will return an index of -2 if cannot be done
     public int canMove(int from_pip, int steps)
     {
+        if(steps<=0)
+            return -2;
         boolean turnFlag = (turn.returnTurn() == turn.returnOrientation());
 
         if(barFlag)

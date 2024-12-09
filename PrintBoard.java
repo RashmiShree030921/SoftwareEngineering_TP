@@ -10,14 +10,15 @@ public class PrintBoard {
     }
 
     // use ArrayList
-    public void print(ArrayList<Pip> pips, boolean turn, boolean orientation,  ArrayList<Pip> bar) {
+    public void print(ArrayList<Pip> pips, Turn turn,  ArrayList<Pip> bar)
+    {
         int totalWidth = 46;                                    // Assume the total width of the game board
         System.out.print("\033[H\033[2J");                      // Clear the console
         System.out.flush();                                         // Flush the output stream
         String title = "Backgammon";                            // Title of the game
         printHeader(title, totalWidth);                         // Print the game header
-        PrintCurrentPlayerName(turn, totalWidth);               // Print the current player's name
-        printBoardLayout(pips, turn,orientation, bar);          // Print the board layout
+        PrintCurrentPlayerName(turn.returnTurn(), totalWidth);               // Print the current player's name
+        printBoardLayout(pips, turn, bar);          // Print the board layout
     }
 
     // Method to print the current player's name
@@ -29,15 +30,21 @@ public class PrintBoard {
         System.out.println("=============================================");
     }
 
-
+    public int convert2AlterIndex(int i)
+    {
+        int num_pips = 24;
+        return (((num_pips - 1 - i) + num_pips) % num_pips);
+    }
     // BOARD layout
-    public void printBoardLayout(ArrayList<Pip> pips, boolean turn, boolean orientation, ArrayList<Pip> bar) {
+    public void printBoardLayout(ArrayList<Pip> pips, Turn turn, ArrayList<Pip> bar)
+    {
         StringBuilder numBorderTop = new StringBuilder("   ");
         StringBuilder numBorderBottom = new StringBuilder("  ");
         String[] checkers = new String[24];
 
         // Organize the board numbers and checker positions based on the turn orientation
-        if (turn) { // If it's player 1's turn (normal orientation)
+        if (turn.returnTurn() == turn.returnOrientation())
+        { // If it's player 1's turn (normal orientation)
             // Organise the top numbers (12-23)
             for (int i = 12; i < 24; i++) {
                 numBorderTop.append(String.format("%2d ", i));
@@ -47,7 +54,6 @@ public class PrintBoard {
                 checkers[i] = pips.get(i).Display();
             }
 
-
             // Organize the bottom numbers (0-11)
             for (int i = 11; i >= 0; i--) {
                 if (i == 5) {
@@ -56,20 +62,22 @@ public class PrintBoard {
                 numBorderBottom.append(String.format("%2d ", i));
                 checkers[i] = pips.get(i).Display();
             }
-        } else { // If it's player 2's turn (flipped orientation)
+        }
+        else
+        { // If it's player 2's turn (flipped orientation)
             // Organize the top numbers (11-0)
-            for (int i = 11; i >= 0; i--) {
-                if (i == 5) {
+            for (int i = 0; i <12; i++) {
+                if (i == 6) {
                     numBorderTop.append("    "); // Gap for the bar
                 }
-                numBorderTop.append(String.format("%2d ", i));
+                numBorderTop.append(String.format("%2d ", convert2AlterIndex(i)));
                 checkers[i] = pips.get(i).Display();
             }
 
             // Organize the bottom numbers (12-23)
-            for (int i = 12; i < 24; i++) {
-                numBorderBottom.append(String.format("%2d ", i));
-                if (i == 17) {
+            for (int i = 23; i >11; i--) {
+                numBorderBottom.append(String.format("%2d ", convert2AlterIndex(i)));
+                if (i == 18) {
                     numBorderBottom.append("     "); // Gap for the bar
                 }
                 checkers[i] = pips.get(i).Display();
@@ -82,17 +90,19 @@ public class PrintBoard {
         // Print the board layout with the checkers
         System.out.println("\u001B[32m====================|===|====================\u001B[0m");
 
-
         // Print the top half of the board (pips 12-23 or flipped)
-        for (int row = 5; row > 0; row--) {
+        for (int row = 5; row > 0; row--)
+        {
             System.out.print("\u001B[32m| \u001B[0m");
-            for (int i = 12; i < 18; i++) {
+            for (int i = 12; i < 18; i++)
+            {
                 printPipRow(checkers[i], row);
             }
             int test = 0;
             printBar(bar, test, row - 1); // Adjusts for white checkers
 
-            for (int i = 18; i < 24; i++) {
+            for (int i = 18; i < 24; i++)
+            {
                 printPipRow(checkers[i], row);
             }
             System.out.println("\u001B[32m|\u001B[0m");

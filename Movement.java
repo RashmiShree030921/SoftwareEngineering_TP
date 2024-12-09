@@ -24,9 +24,10 @@ public class Movement {
     public int doubleCube=1;
 
     public Player_IDs IDs;
-    //public PrintBoard printBoard;
+    PrintBoard printBoard;
 
-    public Movement(Dice dice, ArrayList<Pip> pips, Turn turn, ArrayList<Pip> Bar, boolean testMode, TestFile testFile, Player_IDs IDs) {
+    public Movement(Dice dice, ArrayList<Pip> pips, Turn turn, ArrayList<Pip> Bar, boolean testMode, TestFile testFile, Player_IDs IDs)
+    {
         this.dice = dice;
         this.turn = turn;
         this.Pips = pips;
@@ -35,6 +36,7 @@ public class Movement {
         this.testMode = testMode;
         this.testFile = testFile;
         this.IDs = IDs;
+        this.printBoard = new PrintBoard(IDs);
     }
 
     private void populateCommands() {
@@ -49,7 +51,8 @@ public class Movement {
 
     private void updateCommands(Command move) {
         genCommands.updateCommands(move);
-        genCommands.displayCommands(IDs.returnName(turn.returnTurn()));
+        if(genCommands.returnTotalSteps()>0)
+            genCommands.displayCommands(IDs.returnName(turn.returnTurn()));
     }
 
     public boolean checkWin() {
@@ -86,9 +89,11 @@ public class Movement {
                     end = convert2AlterIndex(end);
 
 
-                if (start == -1 || !Pips.get(start).isEmpty()) {
+                if (start == -1 || !Pips.get(start).isEmpty())
+                {
                     Checker checker;
-                    if (start == -1) {
+                    if (start == -1)
+                    {
                         if (!turn_flag)
                             checker = Bar.getFirst().removeChecker();
                         else
@@ -96,7 +101,8 @@ public class Movement {
                     } else
                         checker = Pips.get(start).removeChecker();
 
-                    if (checker != null) {
+                    if (checker != null)
+                    {
                         if (end == -1) {
                             if (turn.returnTurn() == turn.returnOrientation())
                                 removedCheckers[0]++;
@@ -139,20 +145,22 @@ public class Movement {
                             System.out.println("Moved checker from pip " + start + " to pip " + (end));
                             System.out.println("Moves Left: " + total_steps);
                         }
-
-                        if (total_steps > 0) {
+                        if(total_steps >0)
                             Display();
-                            updateCommands(nextMove);
-                        }
+                        updateCommands(nextMove);
+                        if(genCommands.returnTotalSteps() <=0)
+                            break;
+
+
                     } else
                         System.out.println("No checker to move from pip " + start);
                 }
             }
+
         }
         dice.clearDice();
+        turn.changeTurn();
 
-        if(!checkWin())
-            turn.changeTurn();
         return true;
     }
 
@@ -165,7 +173,7 @@ public class Movement {
     {
         String command;
         if(testMode)
-            command = testFile.readNext();
+            command = (testFile.readNext());
         else
             command = (scan.nextLine().trim()).toLowerCase();
         Command returning = genCommands.selectCommand(command);
@@ -179,9 +187,9 @@ public class Movement {
             hint();
         else if (command.startsWith("dice") )
             dice_set(command);
-        else if(command.startsWith("new match"))
+        else if(command.equalsIgnoreCase("new match"))
             new_match();
-        else if(command.startsWith("doubles"))
+        else if(command.equalsIgnoreCase("doubles"))
             doubles();
         else
         {
@@ -250,10 +258,15 @@ public class Movement {
     public void new_match()
     {
         boolean flag = false;
+        String response = " ";
 
-        while(!flag) {
+        do
+        {
             System.out.print("Do you want to start a new match? (yes/no): ");
-            String response = scan.nextLine().trim();
+            if(testMode)
+                response = (testFile.readNext());
+            else
+                response = scan.nextLine().trim();
 
             if (response.toLowerCase().equalsIgnoreCase("yes"))
             {
@@ -261,9 +274,11 @@ public class Movement {
                 restartFlag = true;
                 flag = true;
             }
-            else if(response.toLowerCase().equalsIgnoreCase("no"))
+            else if(response.toLowerCase().equalsIgnoreCase("no")) {
                 flag = true;
-        }
+            }
+
+        }while(!flag);
     }
 
     private void doubles()
@@ -276,10 +291,15 @@ public class Movement {
                 return;
             }
             boolean flag = false;
-            while (!flag)
+            String response = " ";
+
+            do
             {
                 System.out.println("Does your opponent, " + IDs.returnName(!turn.returnTurn()) + ", want to accept the double cube? (yes/no) ");
-                String response = scan.nextLine().trim();
+                if(testMode)
+                    response = testFile.readNext();
+                else
+                    response = scan.nextLine();
 
                 if (response.toLowerCase().equalsIgnoreCase("yes"))
                 {
@@ -296,7 +316,7 @@ public class Movement {
                         System.out.println("The double cube remains in the possession of " + IDs.returnName(turn.returnTurn())+ " .");
                     flag = true;
                 }
-            }
+            }while (!flag);
         }
         else
             System.out.println("You do not have permission to offer doubles at this time.");
@@ -307,6 +327,7 @@ public class Movement {
     public int calculateScore()
     {
         int cubeValue = doubleCube;
+        turn.changeTurn();
 
         doubleCube = 1;
 
@@ -345,9 +366,8 @@ public class Movement {
         return cubeValue; //Single
     }
 
-    public void Display() {
-        PrintBoard printBoard = new PrintBoard(IDs);
-
-        printBoard.printBoardLayout(Pips, turn.returnTurn(), turn.returnOrientation(), Bar);
+    public void Display()
+    {
+        printBoard.printBoardLayout(Pips, turn, Bar);
     }
 }

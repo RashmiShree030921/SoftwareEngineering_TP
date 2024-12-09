@@ -16,23 +16,29 @@ public class TestFile
         }
         catch (Exception ex)
         {
-            System.out.println("Error");
+            System.out.println("Couldn't find file 'Command_Test.txt' in your directory. Please ensure the file has the correct name.");
         }
 
     }
 
     public String readNext()
     {
+        String line;
         try {
             if (input.hasNextLine()) {
-                String line = input.nextLine();
+                line = input.nextLine().trim().toLowerCase();
+                System.out.println(line);
                 return line;
             }
         }
-        catch(Exception ex) {
-            System.out.println("Couldn't find file 'Command_Test.txt' in your directory. Please ensure the file has the correct name.");
+        catch(Exception ex)
+        {
+            System.out.println("Error occurred in reading the file.");
+            System.exit(0);
 
         }
+        System.out.println("End of file reached.");
+        System.exit(0);
         return null;
     }
 
@@ -48,13 +54,16 @@ public class TestFile
         try {
             if (input.hasNextInt()) {
                 test = input.nextInt();
+                input.nextLine();
                 return test;
             }
         }
         catch(Exception ex) {
-            System.out.println("Couldn't find entry.");
+            System.out.println("Error occurred in reading the file.");
 
         }
+        System.out.println("End of file reached.");
+        System.exit(0);
         return 0;
     }
 

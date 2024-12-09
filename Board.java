@@ -122,20 +122,26 @@ public class Board
 
     public void setMatchLength()
     {
-        if(testMode)
-        {
-            matchLength = testFile.nextInt();
-            return;
-        }
-
+        boolean flag = false;
         do
         {
             System.out.println("Please enter a valid match length. ");
 
             try {
-                if (scanner.hasNextInt()) {
-                    matchLength = scanner.nextInt();
-                    return ;
+                if(testMode)
+                {
+                    matchLength = testFile.nextInt();
+                    flag = true;
+                }
+                else
+                {
+                    if (scanner.hasNextInt())
+                    {
+                        matchLength = scanner.nextInt();
+                        flag = true;
+                    }
+                    else
+                        scanner.nextLine();
                 }
             }
             catch(Exception ex)
@@ -143,8 +149,7 @@ public class Board
                 System.out.println("Couldn't find entry.");
 
             }
-        }
-        while(true);
+        } while(!flag);
 
     }
 

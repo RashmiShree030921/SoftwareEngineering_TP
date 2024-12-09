@@ -46,16 +46,6 @@ public class Command_Generator
         int result ;
         boolean bounds;
 
-        if(testMode)
-        {
-            input = testFile.readNext();
-            if(input == null)
-            {
-                System.out.println("End of test file has been reached. ");
-                System.exit(0);
-            }
-        }
-
         if(input.matches("^(?!.*(.).*\\1)([a-zA-Z])$") )
         {
             result = (input.toUpperCase()).charAt(0) - 'A';
@@ -99,6 +89,11 @@ public class Command_Generator
                 if (!c.isEmpty() && !checkNextDuplicate(c.getFirst()))
                     nextMove.add(c.getFirst());
 
+        }
+        if(nextMove.isEmpty())
+        {
+            System.out.println("You cannot make anymore valid moves this round. ");
+            total_steps =0;
         }
     }
 
