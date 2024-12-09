@@ -192,7 +192,7 @@ class Move_CheckTest {
     // Test for canMove method
     ////checks if move can be made - returns index of destination pip
     // will return an index of -2 if cannot be done
-    // Test for invalid moves is not tested in this method
+    // Test not including testmode (as testmode is tested seperately in tesfile)
     @org.junit.jupiter.api.Test
     void testCanMove() {
         // Initialise Pips
