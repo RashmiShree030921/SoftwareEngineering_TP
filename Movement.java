@@ -20,8 +20,8 @@ public class Movement {
     private TestFile testFile;
 
     public boolean restartFlag = false;
-    private boolean doubleOwner;
-    private int doubleCube=1;
+    public boolean doubleOwner;
+    public int doubleCube=1;
 
     public Player_IDs IDs;
 
@@ -41,7 +41,6 @@ public class Movement {
             System.out.println(IDs.returnName(doubleOwner) + " is currently the owner of the double cube.");
         else
             System.out.println("The double cube is currently unowned.");
-
         dice.rollDice(true);
         genCommands.processCommands();
         genCommands.displayCommands(IDs.returnName(turn.returnTurn()));
@@ -159,7 +158,7 @@ public class Movement {
         return (((num_pips - 1 - i) + num_pips) % num_pips);
     }
 
-    private Command processCommand()
+    public Command processCommand()
     {
         String command;
         if(testMode)
@@ -192,7 +191,7 @@ public class Movement {
         return null;
     }
 
-    private void pipCount()
+    public void pipCount()
     {
         int whiteCount = 0, blackCount = 0;
         for (Pip pip : Pips)
@@ -206,13 +205,13 @@ public class Movement {
         System.out.println("Pip count - White: " + whiteCount + ", Black: " + blackCount);
     }
 
-    private void hint()
+    public void hint()
     {
         System.out.println("HINT: Below are a list of moves you can make:  ");
         genCommands.displayCommands(IDs.returnName(turn.returnTurn()));
     }
 
-    private void dice_set(String command)
+    public void dice_set(String command)
     {
         String regex = "(?i)dice\\s*(\\d)\\s*(\\d)|dice\\s*(\\d)(\\d)|dice(\\d)(\\d)";
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
@@ -245,7 +244,7 @@ public class Movement {
     public boolean returnRestart(){ return restartFlag; }
     public void setRestart(boolean set) { restartFlag = set;  }
 
-    private void new_match()
+    public void new_match()
     {
         boolean flag = false;
 

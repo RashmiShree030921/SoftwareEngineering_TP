@@ -32,7 +32,7 @@ public class Board
         movement = new Movement(dice, Pips, turn, Bar, testMode,testFile, IDs);
         setMatchLength();
     }
-    private void askTest()
+    public void askTest()
     {
         boolean flag = false;
 
@@ -51,7 +51,7 @@ public class Board
 
     }
 
-    private void generateBoard()
+    public void generateBoard()
     {
         int[][] start_matrix = {{0,5,7,11}, {2,5,3,5}};
         boolean[][] start_colours = { {false, true, true, false}, {true, false, false, true} };
@@ -73,7 +73,7 @@ public class Board
 
     }
 
-    private void initializeGame()
+    public void initializeGame()
     {
         movement.resetBoard();
         IDs.startRoll(turn,dice);
@@ -120,7 +120,7 @@ public class Board
 
     }
 
-    private void setMatchLength()
+    public void setMatchLength()
     {
         if(testMode)
         {
@@ -148,14 +148,14 @@ public class Board
 
     }
 
-    private void updateMatchScore(int gameScore)
+    public void updateMatchScore(int gameScore)
     {
         if (turn.returnTurn()) matchScore[1] += gameScore;
         else matchScore[0] += gameScore;
         System.out.println("Current Match Score: " + IDs.returnName(false) + " " + matchScore[0] + " - " + IDs.returnName(true) + " " + matchScore[1]);
     }
 
-    private void announceGameResult(int gameScore)
+    public void announceGameResult(int gameScore)
     {
         String resultMessage;
         if (gameScore == 3) {
@@ -168,7 +168,7 @@ public class Board
         System.out.println(resultMessage);
     }
 
-    private void displayMatchInfo()
+    public void displayMatchInfo()
     {
         System.out.println("Match Length: " + matchLength);
         System.out.println("Current Match Score: " + IDs.returnName(false) + " " + matchScore[0] + " - " + IDs.returnName(true) + " " + matchScore[1]);
