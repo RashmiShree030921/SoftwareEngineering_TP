@@ -30,6 +30,16 @@ public class PrintBoard {
         System.out.println("=============================================");
     }
 
+    //filf indicies for white player turn
+    private int flipIndex(int index) {
+        if (index >= 0 && index < 12) {
+            return 23 - index; // Flip bottom row to top row
+        } else if (index >= 12 && index < 24) {
+            return 23 - index; // Flip top row to bottom row
+        }
+        return index; // Return
+    }
+
 
     // BOARD layout
     public void printBoardLayout(ArrayList<Pip> pips, Turn turn, ArrayList<Pip> bar)
@@ -40,9 +50,12 @@ public class PrintBoard {
 
         boolean turn_check = turn.returnTurn();
 
+        //Take this and check return turn: (if turn is true == black player, else while == white player)
+
+
         // Organize the board numbers and checker positions based on the turn orientation
-        if (turn_check)
-        { // If it's player 1's turn (normal orientation)
+        if (turn_check) // orientation for player with black checkers
+        {
             // Organise the top numbers (12-23)
             for (int i = 12; i < 24; i++) {
                 numBorderTop.append(String.format("%2d ", i));
@@ -63,24 +76,26 @@ public class PrintBoard {
         }
         else
         { // If it's player 2's turn (flipped orientation)
-        // Organize the top numbers (11-0)
-        for (int i = 11; i >= 0; i--) {
-            if (i == 5) {
-                numBorderTop.append("    "); // Gap for the bar
+            // Organize the top numbers (11-0)
+            for (int i = 11; i >= 0; i--) {
+                int flippedIndex = flipIndex(i);
+                if (i == 5) {
+                    numBorderTop.append("    "); // Gap for the bar
+                }
+                numBorderTop.append(String.format("%2d ", i));
+                checkers[i] = pips.get(flippedIndex).Display();
             }
-            numBorderTop.append(String.format("%2d ", i));
-            checkers[i] = pips.get(i).Display();
-        }
 
-        // Organize the bottom numbers (12-23)
-        for (int i = 12; i < 24; i++) {
-            numBorderBottom.append(String.format("%2d ", i));
-            if (i == 17) {
-                numBorderBottom.append("     "); // Gap for the bar
+            // Organize the bottom numbers (12-23)
+            for (int i = 12; i < 24; i++) {
+                int flippedIndex = flipIndex(i);
+                numBorderBottom.append(String.format("%2d ", i));
+                if (i == 17) {
+                    numBorderBottom.append("     "); // Gap for the bar
+                }
+                checkers[i] = pips.get(flippedIndex).Display();
             }
-            checkers[i] = pips.get(i).Display();
         }
-    }
 
         // Print the top border numbers
         System.out.println(numBorderTop);
@@ -151,9 +166,9 @@ public class PrintBoard {
         String checkerColor = checkerDisplay.substring(1, 2); // Default to space if colour missing
 
         if ("W".equals(checkerColor)) {
-            checkerColor = "\u25CB"; // White Circle
+            checkerColor = "\u25CF"; // White Circle
         } else if ("B".equals(checkerColor)) {
-            checkerColor = "\u25CF"; // Black Circle with White Outline
+            checkerColor = "\u25CB"; // Black Circle with White Outline
         } else {
             checkerColor = " "; // Default to space if no color
         }
