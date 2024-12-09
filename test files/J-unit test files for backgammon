@@ -1,1 +1,11 @@
-
+All Classes required to have JUnit test:
+1) Checker - 
+2) Dice -
+3) Movement -
+4) PipTest -
+5) Turn -
+6) Backgammon
+7) Move_Check
+8) Player_IDs
+9) Command
+10) Command_Generator
