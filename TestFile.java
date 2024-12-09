@@ -52,7 +52,7 @@ public class TestFile
             }
         }
         catch(Exception ex) {
-            System.out.println("Couldn't find entry.");
+            System.out.println("Couldn't find file 'Command_Test.txt' in your directory. Please ensure it is saved under the correct name.");
 
         }
         return 0;
