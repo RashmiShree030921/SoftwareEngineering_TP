@@ -43,6 +43,8 @@ class MovementTest {
         movement = new Movement(dice, pips, turn, bar, playerIDs);
     }
 
+    // The test for Movement is implemented in the TestFile Class
+
     //Implemented before ---- command select assumes can munually select move
     // early test for the movement class
     @Test
