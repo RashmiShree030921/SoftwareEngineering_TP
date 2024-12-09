@@ -24,6 +24,7 @@ public class Movement {
     public int doubleCube=1;
 
     public Player_IDs IDs;
+    //public PrintBoard printBoard;
 
     public Movement(Dice dice, ArrayList<Pip> pips, Turn turn, ArrayList<Pip> Bar, boolean testMode, TestFile testFile, Player_IDs IDs) {
         this.dice = dice;
@@ -344,37 +345,9 @@ public class Movement {
         return cubeValue; //Single
     }
 
-    public void Display()
-    {
-        String output = " ";
+    public void Display() {
+        PrintBoard printBoard = new PrintBoard(IDs);
 
-        if(turn.returnOrientation() == turn.returnTurn())
-        {
-            for (int i = (num_pips / 2); i < num_pips; i++)
-                output = output + Pips.get(i).Display() + ":" + i + " ";
-
-            output = output +"\n\n ";
-
-            for (int i = (num_pips / 2) - 1; i >= 0; i--)
-                output = output + Pips.get(i).Display() + ":"+ i + " ";
-
-            System.out.println(output);
-        }
-        else
-        {
-            for(int i = 0; i < (num_pips/2) ; i++)
-                output = output + Pips.get(i).Display() + ":" + convert2AlterIndex(i) + " ";
-
-            output = output + "\n\n ";
-
-            for (int i = num_pips-1; i > (num_pips / 2)-1 ; i--)
-                output = output + Pips.get(i).Display() + ":" + convert2AlterIndex(i) + " " ;
-
-            System.out.println(output);
-        }
-
-        System.out.println("Bar: First: " + Bar.getFirst().returnLength() + "    Second: " + Bar.getLast().returnLength());
-        System.out.println("Off: First: " + removedCheckers[0] + "   Second:  " + removedCheckers[1]);
+        printBoard.printBoardLayout(Pips, turn.returnTurn(), turn.returnOrientation(), Bar);
     }
-
 }
