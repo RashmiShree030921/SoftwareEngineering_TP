@@ -34,7 +34,7 @@ public class PrintBoard {
     public int convert2AlterIndex(int i)
     {
         int num_pips =24;
-        return (((num_pips-1-i)%num_pips + num_pips)%num_pips);
+        return(((num_pips-1-i)%num_pips + num_pips)%num_pips);
     }
 
 
@@ -74,23 +74,23 @@ public class PrintBoard {
         else
         { // If it's player 2's turn (flipped orientation)
             // Organize the top numbers (11-0)
-            for (int i = 11; i >= 0; i--) {
+            for (int i = 12; i <24; i++) {
                 int flippedIndex = convert2AlterIndex(i);
-                if (i == 5) {
+                if (i == 18) {
                     numBorderTop.append("    "); // Gap for the bar
                 }
-                numBorderTop.append(String.format("%2d ", flippedIndex));
-                checkers[23-i] = pips.get(i).Display();
+                numBorderTop.append(String.format("%2d ", convert2AlterIndex((11-flippedIndex)%24)));
+                checkers[((11-flippedIndex)%24)] = pips.get(i).Display();
             }
 
             // Organize the bottom numbers (12-23)
-            for (int i = 12; i < 24; i++) {
+            for (int i = 11; i >=0; i--) {
                 int flippedIndex = convert2AlterIndex(i);
-                numBorderBottom.append(String.format("%2d ", flippedIndex));
-                if (i == 17) {
+                numBorderBottom.append(String.format("%2d ",convert2AlterIndex((23-(flippedIndex-12))%24)));
+                if (i == 6) {
                     numBorderBottom.append("     "); // Gap for the bar
                 }
-                checkers[23-i] = pips.get(i).Display();
+                checkers[(23-(flippedIndex-12))%24] = pips.get(i).Display();
             }
         }
 
