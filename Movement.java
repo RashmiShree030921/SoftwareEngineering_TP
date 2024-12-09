@@ -68,8 +68,10 @@ public class Movement {
 
         boolean turn_flag = (turn.returnTurn() != turn.returnOrientation());
 
-        while (total_steps > 0 && !restartFlag)
+        while (total_steps > 0 )
         {
+            if(restartFlag)
+                return true;
             nextMove = processCommand();
 
             if (nextMove != null)
@@ -238,7 +240,7 @@ public class Movement {
         Bar.add(new Pip());
         Bar.add(new Pip());
         genCommands.clearCommands();
-        restartFlag = true;
+        restartFlag = false;
     }
 
     public boolean returnRestart(){ return restartFlag; }
@@ -255,6 +257,7 @@ public class Movement {
             if (response.toLowerCase().equalsIgnoreCase("yes"))
             {
                 System.out.println("Starting a new match...");
+                restartFlag = true;
                 flag = true;
             }
             else if(response.toLowerCase().equalsIgnoreCase("no"))
