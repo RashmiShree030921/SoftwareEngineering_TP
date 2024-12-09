@@ -1,1 +1,3 @@
+Refection was used to access private attributes during the J-unit tests
 
+The reference https://www.geeksforgeeks.org/how-to-access-private-field-and-method-using-reflection-in-java/ was used as a guide to help with this implementation. 
