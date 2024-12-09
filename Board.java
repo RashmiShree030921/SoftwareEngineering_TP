@@ -45,6 +45,8 @@ public class Board
                 testMode = true;
                 flag = true;
             }
+             else if(response.toLowerCase().equalsIgnoreCase("no"))
+                flag = true;
         }
 
     }
