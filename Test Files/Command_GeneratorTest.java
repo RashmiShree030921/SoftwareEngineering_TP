@@ -88,7 +88,7 @@ class Command_GeneratorTest {
 
     // Test Process Commands and update commands
     @Test
-    void testProcessCommands2() throws Exception {
+    void testProcessCommands() throws Exception {
         // Setup: Create necessary mock objects
         ArrayList<Integer> rolls = new ArrayList<>();
         rolls.add(4);
