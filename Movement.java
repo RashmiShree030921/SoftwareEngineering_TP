@@ -166,7 +166,7 @@ public class Movement {
 
     public int convert2AlterIndex(int i)
     {
-        return (((num_pips - 1 - i) + num_pips) % num_pips);
+        return (((num_pips - 1 - i)%num_pips + num_pips) % num_pips);
     }
 
     public Command processCommand()

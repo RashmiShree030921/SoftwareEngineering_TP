@@ -31,13 +31,10 @@ public class PrintBoard {
     }
 
     //filf indicies for white player turn
-    private int flipIndex(int index) {
-        if (index >= 0 && index < 12) {
-            return 23 - index; // Flip bottom row to top row
-        } else if (index >= 12 && index < 24) {
-            return 23 - index; // Flip top row to bottom row
-        }
-        return index; // Return
+    public int convert2AlterIndex(int i)
+    {
+        int num_pips =24;
+        return (((num_pips-1-i)%num_pips + num_pips)%num_pips);
     }
 
 
@@ -48,7 +45,7 @@ public class PrintBoard {
         StringBuilder numBorderBottom = new StringBuilder("  ");
         String[] checkers = new String[24];
 
-        boolean turn_check = turn.returnTurn();
+        boolean turn_check = turn.returnTurn()==turn.returnOrientation();
 
         //Take this and check return turn: (if turn is true == black player, else while == white player)
 
@@ -78,22 +75,22 @@ public class PrintBoard {
         { // If it's player 2's turn (flipped orientation)
             // Organize the top numbers (11-0)
             for (int i = 11; i >= 0; i--) {
-                int flippedIndex = flipIndex(i);
+                int flippedIndex = convert2AlterIndex(i);
                 if (i == 5) {
                     numBorderTop.append("    "); // Gap for the bar
                 }
-                numBorderTop.append(String.format("%2d ", i));
-                checkers[i] = pips.get(flippedIndex).Display();
+                numBorderTop.append(String.format("%2d ", flippedIndex));
+                checkers[23-i] = pips.get(i).Display();
             }
 
             // Organize the bottom numbers (12-23)
             for (int i = 12; i < 24; i++) {
-                int flippedIndex = flipIndex(i);
-                numBorderBottom.append(String.format("%2d ", i));
+                int flippedIndex = convert2AlterIndex(i);
+                numBorderBottom.append(String.format("%2d ", flippedIndex));
                 if (i == 17) {
                     numBorderBottom.append("     "); // Gap for the bar
                 }
-                checkers[i] = pips.get(flippedIndex).Display();
+                checkers[23-i] = pips.get(i).Display();
             }
         }
 

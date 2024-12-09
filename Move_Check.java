@@ -36,7 +36,7 @@ public class Move_Check
     public boolean returnBarFlag() { return barFlag; }
     public void setBarFlag(boolean set) { barFlag = set; }
 
-   public int convert2AlterIndex(int i) { return (((num_pips-1-i)+num_pips)%num_pips); }
+   public int convert2AlterIndex(int i) { return (((num_pips-1-i)%num_pips + num_pips)%num_pips); }
     //checks if we can start moving checkers off the board
     // i.e. check if there are any checkers of this colours outside home area
     public boolean homeCheck()
