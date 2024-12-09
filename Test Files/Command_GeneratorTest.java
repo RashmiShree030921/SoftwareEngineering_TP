@@ -1,4 +1,5 @@
 // Hannah Nolan gitHub ID (hnolan2019) ucd
+// The select command is tested fully in the testFile as it reads in multiple selections
 
 import static org.junit.jupiter.api.Assertions.*;
 
