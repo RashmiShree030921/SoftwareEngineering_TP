@@ -1,561 +1,400 @@
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.io.ByteArrayInputStream;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.List;
-import java.lang.reflect.Method;
 import java.util.Scanner;
-import java.util.function.Supplier;
 
-class MovementTest {
+public class Movement {
+    private int num_pips = 24;
+    private Command_Generator genCommands;
 
-    // Test in movement test all process commmand (hint, pip, dice, new match, valid moves, invalid moves) Test via display
-    //declare
-    private Movement movement;
-    private ArrayList<Pip> pips;
-    private ArrayList<Pip> bar;
+    private ArrayList<Pip> Pips;
+    private ArrayList<Pip> Bar;
+
+    private int[] removedCheckers = {0, 0};
+
     private Dice dice;
     private Turn turn;
+
+    private Command nextMove;
+    private Scanner scan = new Scanner(System.in);
+
+    private boolean testMode;
     private TestFile testFile;
-    private Player_IDs IDs;
 
+    public boolean restartFlag = false;
+    public boolean doubleOwner;
+    public int doubleCube=1;
 
-    // set upu the conditions for the test to run
-    @BeforeEach
-    void setup() {
-        pips = new ArrayList<>();
-        for (int i = 0; i < 24; i++) pips.add(new Pip());
-        bar = new ArrayList<>();
-        bar.add(new Pip());
-        bar.add(new Pip());
-        turn = new Turn();
-        turn.setTurn(true, true);
-        dice = new Dice(new ArrayList<>(List.of(4, 5)));
-        testFile = new TestFile();
+    public Player_IDs IDs;
+    PrintBoard printBoard;
 
+    public Movement(Dice dice, ArrayList<Pip> pips, Turn turn, ArrayList<Pip> Bar, boolean testMode, TestFile testFile, Player_IDs IDs)
+    {
+        this.dice = dice;
+        this.turn = turn;
+        this.Pips = pips;
+        this.Bar = Bar;
+        this.genCommands = new Command_Generator(dice, Pips, turn, Bar, testFile, testMode);
+        this.testMode = testMode;
+        this.testFile = testFile;
+        this.IDs = IDs;
+        this.printBoard = new PrintBoard(IDs);
     }
 
+    private void populateCommands() {
+        if(doubleCube>1)
+            System.out.println(IDs.returnName(doubleOwner) + " is currently the owner of the double cube.");
+        else
+            System.out.println("The double cube is currently unowned.");
+        if(total_steps<=0)
+            dice.rollDice(true);
+        genCommands.processCommands();
+        genCommands.displayCommands(IDs.returnName(turn.returnTurn()));
+    }
 
-    // Tests to see if the moveChecker can accurately move a checker from one pip to another
-    @Test
-    void moveChecker() throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException {
-        pips.get(2).addChecker(new Checker(true)); // Add a black checker to pip 0
-        pips.get(0).addChecker(new Checker(false)); // Add a blocking checker to pip 23
+    private void updateCommands(Command move) {
+        genCommands.updateCommands(move);
+        if(genCommands.returnTotalSteps()>0)
+            genCommands.displayCommands(IDs.returnName(turn.returnTurn()));
+    }
 
-        String simulatedInput = "Mike\nBob\nX\nA\n";
-        System.setIn(new ByteArrayInputStream(simulatedInput.getBytes()));
-
-        // Initialise
-        ArrayList<Integer> rolls = new ArrayList<>();
-        Dice dice = new Dice(rolls);
-
-        Command_Generator generator = new Command_Generator(dice, pips, turn, bar, testFile, false);
-
-        // Create Player_IDs instance
-        Player_IDs playerIDs = new Player_IDs(turn, dice, false, null);
-
-        // Test (1) Enusure new match command is processed
-        Movement movement = new Movement(dice, pips, turn, bar, false, testFile, playerIDs);
-
-        //simulate user input
-        for (int i = 0; i < 12; i++) {
-            String simulated_IN = "A\nA\nA\nA\nA\nA\nA\nA";
-            System.setIn(new ByteArrayInputStream(simulated_IN.getBytes()));
-
-            // Replace the Scanner in Movement with one reading from the simulated input
-            Field scanField = Movement.class.getDeclaredField("scan"); // Need to bypass the scann in the movement class
-            scanField.setAccessible(true);  //make access possible
-            scanField.set(movement, new Scanner(System.in));
-
-            // change process commands manually to test move checker - use reflection to access private data
-            Method processCommands = Movement.class.getDeclaredMethod("processCommand"); // need to change from the scan user input - to the simulated input
-            processCommands.setAccessible(true);
-
-            // calling the method we are testing  - process commands is being called part of this
-            movement.moveChecker();
-            movement.Display();
-
-            // Manually access the removedCheckers - to check the win condition - reflection for private
-            Field removedCheckers = Movement.class.getDeclaredField("removedCheckers"); // Need to bypass
-            removedCheckers.setAccessible(true);  //make access possible
-            removedCheckers.set(movement, new int[]{14, 0}); // replace with 15 checkers
-
-            movement.moveChecker();
-            movement.Display();
+    public boolean checkWin() {
+        if (turn.returnTurn() == turn.returnOrientation()) {
+            System.out.println("you have won the game");
+            return (removedCheckers[0] == 15);
 
         }
-    }
+        else{
 
-    // Test for checkWin method (Test it returns false when no player has won, and true when a player has won)
-    @Test
-    void testCheckWin() throws NoSuchFieldException, IllegalAccessException {
-
-        // test (1): Invalid win
-        // No Player Ids set up - so no player can win
-        Movement movement = new Movement(dice, pips, turn, bar, false, testFile, null);
-
-        // Should return false as no player has won
-        assertFalse(movement.checkWin(), "No player should have won yet");
-
-        // Test (2): Player 1 wins - Valid entry
-        // Manually access the removedCheckers - to check the win condition - reflection for private
-        Field removedCheckers = Movement.class.getDeclaredField("removedCheckers"); // Need to bypass
-        removedCheckers.setAccessible(true);  //make access possible
-        removedCheckers.set(movement, new int[]{15, 0}); // replace with 15 checkers
-
-        // Checks if player 2 has one (black checkers)
-        assertTrue(movement.checkWin(), "A player should have won");
-
-        // Test (3): Player 2 wins - invalid entry
-        removedCheckers.set(movement, new int[]{3, 0});
-
-        // Checks if player 2 has one (black checkers)
-        assertFalse(movement.checkWin(), "A player should not have won");
-    }
-
-    // Test to see if the find win method can accurately find a win when the checkers are removed
-    // Player to first remove all pieces from the board wins
-    @Test
-    void findWin() throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException {
-        pips.get(2).addChecker(new Checker(true)); // Add a black checker to pip 0
-        pips.get(0).addChecker(new Checker(false)); // Add a blocking checker to pip 23
-
-        String simulatedInput = "Mike\nBob\nX\nA\n";
-        System.setIn(new ByteArrayInputStream(simulatedInput.getBytes()));
-
-        // Initialise
-        ArrayList<Integer> rolls = new ArrayList<>();
-        Dice dice = new Dice(rolls);
-
-        Command_Generator generator = new Command_Generator(dice, pips, turn, bar, testFile, false);
-
-        // Create Player_IDs instance
-        Player_IDs playerIDs = new Player_IDs(turn, dice, false, null);
-
-        // Test (1) Enusure new match command is processed
-        Movement movement = new Movement(dice, pips, turn, bar, false, testFile, playerIDs);
-
-        //simulate user input
-        for (int i = 0; i < 3; i++) {
-            String simulated_IN = "A\nA";
-            System.setIn(new ByteArrayInputStream(simulated_IN.getBytes()));
-
-            // Replace the Scanner in Movement with one reading from the simulated input
-            Field scanField = Movement.class.getDeclaredField("scan"); // Need to bypass the scann in the movement class
-            scanField.setAccessible(true);  //make access possible
-            scanField.set(movement, new Scanner(System.in));
-
-            // change process commands manually to test move checker - use reflection to access private data
-            Method processCommands = Movement.class.getDeclaredMethod("processCommand"); // need to change from the scan user input - to the simulated input
-            processCommands.setAccessible(true);
-
-            // calling the method we are testing  - process commands is being called part of this
-            movement.moveChecker();
-            movement.Display();
-
-            // Manually access the removedCheckers - to check the win condition - reflection for private
-            Field removedCheckers = Movement.class.getDeclaredField("removedCheckers"); // Need to bypass
-            removedCheckers.setAccessible(true);  //make access possible
-            removedCheckers.set(movement, new int[]{14, 0}); // replace with 15 checkers
-            removedCheckers.setAccessible(false); // close accessbility
-
-
-            movement.moveChecker();
-            movement.Display();
-
+            return (removedCheckers[1] == 15);
         }
 
-        boolean win = movement.findWin();
-        System.out.println("Win: " + win);
-
-        boolean test = movement.checkWin();
-        System.out.println("Test: " + test);
     }
 
+    private int total_steps = 0;
 
-    @Test
-    void calculateScore() {
+    public boolean moveChecker()
+    {
+        Display();
+        populateCommands();
+        total_steps = genCommands.returnTotalSteps();
+
+        boolean turn_flag = (turn.returnTurn() != turn.returnOrientation());
+
+        while (total_steps > 0 )
+        {
+            if(restartFlag)
+                return true;
+            nextMove = processCommand();
+
+            if (nextMove != null)
+            {
+                int start = nextMove.returnStart();
+                int end = nextMove.returnEnd();
+                System.out.println("Start: " + start + " End: " + end);
+
+                if (turn_flag && start != -1)
+                    start = convert2AlterIndex(start);
+                if (turn_flag && end != -1)
+                    end = convert2AlterIndex(end);
+
+
+                if (start == -1 || !Pips.get(start).isEmpty())
+                {
+                    Checker checker;
+                    if (start == -1)
+                    {
+                        if (!turn_flag)
+                            checker = Bar.getFirst().removeChecker();
+                        else
+                            checker = Bar.getLast().removeChecker();
+                    } else
+                        checker = Pips.get(start).removeChecker();
+
+                    if (checker != null)
+                    {
+                        if (end == -1) {
+                            if (turn.returnTurn() == turn.returnOrientation())
+                                removedCheckers[0]++;
+                            else
+                                removedCheckers[1]++;
+                        } else {
+                            if (!Pips.get(end).isEmpty()) {
+                                Pip check = Pips.get(end);
+                                if (check.returnColour() != turn.returnTurn()) {
+                                    Checker oldCheck = check.removeChecker();
+                                    if (!turn_flag)
+                                        Bar.getLast().addChecker(oldCheck);
+                                    else
+                                        Bar.getFirst().addChecker(oldCheck);
+                                }
+                            }
+
+                            Pips.get(end).addChecker(checker);
+
+                            if (turn.returnTurn() == turn.returnOrientation())
+                            {
+                                if (start == -1)
+                                    total_steps -= (((end + 1) % num_pips) + num_pips) % num_pips;
+                                else if(start==end)
+                                    total_steps -= num_pips;
+                                else
+                                    total_steps -= (((end - start) % num_pips) + num_pips) % num_pips;
+
+                            }
+                            else
+                            {
+                                if (start == -1)
+                                    total_steps -= ((((23 - end) + 1) % num_pips) + num_pips) % num_pips;
+                                else if(start ==end)
+                                    total_steps -= num_pips;
+                                else
+                                    total_steps -= (((start - end) % num_pips) + num_pips) % num_pips;
+
+                            }
+                            System.out.println("Moved checker from pip " + start + " to pip " + (end));
+                            System.out.println("Moves Left: " + total_steps);
+                        }
+                        if(total_steps >0)
+                            Display();
+
+                        updateCommands(nextMove);
+
+                        if(genCommands.returnTotalSteps() <=0)
+                        {
+                            System.out.println("You cannot make anymore valid moves this round. ");
+                            break;
+                        }
+
+
+                    } else {
+                        System.out.println("No checker to move from pip " + start);
+                        System.exit(0);
+                    }
+                }
+            }
+
+        }
+        dice.clearDice();
+        total_steps = genCommands.returnTotalSteps();
+        turn.changeTurn();
+
+        return true;
     }
 
-    // Test the condition for winning
-    @Test
-    void checkWin() {
-
-
+    public int convert2AlterIndex(int i)
+    {
+        return (((num_pips - 1 - i)%num_pips + num_pips) % num_pips);
     }
 
+    public Command processCommand()
+    {
+        String command;
+        if(testMode)
+            command = (testFile.readNext());
+        else
+            command = (scan.nextLine().trim()).toLowerCase();
+        Command returning = genCommands.selectCommand(command);
+        //System.out.println("received: " + command);
 
-    // Test for process commands  - not test mode
-    // try and enter hint, pip, invalid moves,
-    @Test
-    void process_commands_test() throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException {
-        // Set player IDs
-        // Simulate user input for player names and starting roll
-        String simulatedInput = "Mike\nBob\nX\nhint\npip\nA\n";
-        System.setIn(new ByteArrayInputStream(simulatedInput.getBytes()));
-
-        // Initialise
-        ArrayList<Integer> rolls = new ArrayList<>();
-        dice = new Dice(rolls);
-
-        // Create Player_IDs instance
-        Player_IDs playerIDs = new Player_IDs(turn, dice, false, null);
-
-        // Reset System.in
-        System.setIn(System.in);
-
-        //call the command generator
-        Command_Generator generator = new Command_Generator(dice, pips, turn, bar, testFile, false);
-
-        // Populate pips
-        pips.get(0).addChecker(new Checker(true)); // Add ablack checker to pip 0
-        pips.get(6).addChecker(new Checker(false)); // Add a blocking checker to pip 6
-        pips.get(10).addChecker(new Checker(true)); // Add a black checker to pip 10
-        dice.rollDice(true);
-        generator.processCommands();
-
-        // Test (1): test for hint, pip, and invalid command
-        //simulate user input
-        String simulated_IN = "hint\npip\n#\nA\n";
-        System.setIn(new ByteArrayInputStream(simulated_IN.getBytes()));
-
-        // Test the displayCommands method
-        generator.displayCommands("PlayerName"); // Verify it runs without errors
-
-        // Test (1) Enure that the checkers are moved for valid inputs
-        Movement movement = new Movement(dice, pips, turn, bar, false, testFile, playerIDs);
-
-        // Replace the Scanner in Movement with one reading from the simulated input
-        Field scanField = Movement.class.getDeclaredField("scan"); // Need to bypass the scann in the movement class
-        scanField.setAccessible(true);  //make access possible
-        scanField.set(movement, new Scanner(System.in));
-
-        // change process commands manually to test move checker - use reflection to access private data
-        Method processCommands = Movement.class.getDeclaredMethod("processCommand"); // need to change from the scan user input - to the simulated input
-        processCommands.setAccessible(true);
-
-        movement.moveChecker();
-
-        // if pip is selected then the prcoess commands method will call the pipCount method which returns the pip count by printing the count
-        // Call the pipCOunt to manually compare the output of movement to the direct call of pipCount
-        movement.pipCount();
-
+        if (returning !=null)
+            return returning;
+        else if (command.equalsIgnoreCase("pip") )
+            pipCount();
+        else if (command.equalsIgnoreCase("hint"))
+            hint();
+        else if (command.startsWith("dice") ) {
+            dice_set(command);
+            Display();
+            populateCommands();
+            total_steps = genCommands.returnTotalSteps();
+        }
+        else if(command.equalsIgnoreCase("new match"))
+            new_match();
+        else if(command.equalsIgnoreCase("doubles"))
+            doubles();
+        else
+        {
+            System.out.println("******** Invalid Command ********");
+            System.out.println("\nPlease select one of the following commands below, or enter one of the following commands:");
+            System.out.println("Pip - to see your pip count.\nHint - to view command hints." +
+                    "\nDice - to set the value of the dice. \nNew Match - to start a new match. \nDoubles - to change ownership of the doubles cube.");
+            genCommands.displayCommands(IDs.returnName(turn.returnTurn()));
+        }
+        return null;
     }
 
-    //-------------------------Process COmmands Test--------------------------------------------
-    // Test for process commands  - to ensure that a new match can be started
-    // Test for process commands  - not test mode
-    // try and enter hint, pip, invalid moves,
-    @Test
-    void process_commands_test_new_match() throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException {
-        // Set player IDs
-        // Simulate user input for player names and starting roll
-        String simulatedInput = "Mike\nBob\nX\n";
-        System.setIn(new ByteArrayInputStream(simulatedInput.getBytes()));
-
-        // Initialise
-        ArrayList<Integer> rolls = new ArrayList<>();
-        dice = new Dice(rolls);
-
-        // Create Player_IDs instance
-        Player_IDs playerIDs = new Player_IDs(turn, dice, false, null);
-
-        // Reset System.in
-        System.setIn(System.in);
-
-        //call the command generator
-        Command_Generator generator = new Command_Generator(dice, pips, turn, bar, testFile, false);
-
-        // Populate pips
-        pips.get(0).addChecker(new Checker(true)); // Add a black checker to pip 0
-        pips.get(6).addChecker(new Checker(false)); // Add a blocking checker to pip 6
-        pips.get(10).addChecker(new Checker(true)); // Add a balck to pip 10
-        dice.rollDice(true);
-        generator.processCommands();
-
-        // Test (1): test for hint - new match
-        //simulate user input
-        String simulated_IN = "hint\nnew match\nyes\n";
-        System.setIn(new ByteArrayInputStream(simulated_IN.getBytes()));
-
-        // Test the displayCommands method
-        generator.displayCommands("PlayerName"); // Verify it runs without errors
-
-        // Test (1) Enusure new match command is processed
-        Movement movement = new Movement(dice, pips, turn, bar, false, testFile, playerIDs);
-
-
-        // Replace the Scanner in Movement with one reading from the simulated input
-        Field scanField = Movement.class.getDeclaredField("scan"); // Need to bypass the scann in the movement class
-        scanField.setAccessible(true);  //make access possible
-        scanField.set(movement, new Scanner(System.in));
-
-        // change process commands manually to test move checker - use reflection to access private data
-        Method processCommands = Movement.class.getDeclaredMethod("processCommand"); // need to change from the scan user input - to the simulated input
-        processCommands.setAccessible(true);
-
-        movement.moveChecker();
-
-        // Test the display works after the move - validate test from display
-        movement.Display();
+    public void pipCount()
+    {
+        int whiteCount = 0, blackCount = 0;
+        for (Pip pip : Pips)
+        {
+            if (!pip.isEmpty())
+            {
+                if (pip.returnColour()) whiteCount += pip.returnLength();
+                else blackCount += pip.returnLength();
+            }
+        }
+        System.out.println("Pip count - White: " + whiteCount + ", Black: " + blackCount);
     }
 
-    // Test Process commands and ensure that the dice command can be used properly
-    @Test
-    void process_commands_test_dice_doubles() throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException {
-        // Set player IDs
-        // Simulate user input for player names and starting roll
-        String simulatedInput = "Mike\nBob\nX\n";
-        System.setIn(new ByteArrayInputStream(simulatedInput.getBytes()));
-
-        // Initialise
-        ArrayList<Integer> rolls = new ArrayList<>();
-        dice = new Dice(rolls);
-
-        // Create Player_IDs instance
-        Player_IDs playerIDs = new Player_IDs(turn, dice, false, null);
-
-        // Reset System.in
-        System.setIn(System.in);
-
-        //call the command generator
-        Command_Generator generator = new Command_Generator(dice, pips, turn, bar, testFile, false);
-
-        // Populate pips
-        pips.get(0).addChecker(new Checker(true)); // Add a black checker to pip 0
-        pips.get(6).addChecker(new Checker(false)); // Add a blocking checker to pip 6
-        pips.get(10).addChecker(new Checker(true)); // Add a black checker to pip 10
-        dice.rollDice(true);
-        generator.processCommands();
-
-        // Test (1): test for dice command
-        //simulate user input - tests doubles "yes" and dice
-        String simulated_IN = "doubles\nyes\ndice\ndice66\nA\n";
-        System.setIn(new ByteArrayInputStream(simulated_IN.getBytes()));
-
-        // Test the displayCommands method
-        generator.displayCommands("PlayerName"); // Verify it runs without errors
-
-        // Test (1) Enusure new match command is processed
-        Movement movement = new Movement(dice, pips, turn, bar, false, testFile, playerIDs);
-
-
-        // Replace the Scanner in Movement with one reading from the simulated input
-        Field scanField = Movement.class.getDeclaredField("scan"); // Need to bypass the scann in the movement class
-        scanField.setAccessible(true);  //make access possible
-        scanField.set(movement, new Scanner(System.in));
-
-        // change process commands manually to test move checker - use reflection to access private data
-        Method processCommands = Movement.class.getDeclaredMethod("processCommand"); // need to change from the scan user input - to the simulated input
-        processCommands.setAccessible(true);
-
-        movement.moveChecker();
-
-        // Test the display works after the move - validate test from display
-        movement.Display();
-
+    public void hint()
+    {
+        System.out.println("HINT: Below are a list of moves you can make:  ");
+        genCommands.displayCommands(IDs.returnName(turn.returnTurn()));
     }
 
+    public void dice_set(String command)
+    {
+        String regex = "(?i)dice\\s*(\\d)\\s*(\\d)|dice\\s*(\\d)(\\d)|dice(\\d)(\\d)";
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
+        java.util.regex.Matcher matcher = pattern.matcher(command);
 
-    // Test
-    @Test
-    void testStartNewMatch_and_restaart() {
-        // Set up
-        String simulatedInput = "Mike\nBob\nX\n";
-        System.setIn(new ByteArrayInputStream(simulatedInput.getBytes()));
+        if (matcher.find())
+        {
+            int roll1 = Integer.parseInt(matcher.group(1));
+            int roll2 = Integer.parseInt(matcher.group(2));
 
-        // Initialise
-        ArrayList<Integer> rolls = new ArrayList<>();
-        dice = new Dice(rolls);
-        Player_IDs playerIDs = new Player_IDs(turn, dice, false, null);
-        System.setIn(System.in);
-        Command_Generator generator = new Command_Generator(dice, pips, turn, bar, testFile, false);
-
-        // Populate pips
-        pips.get(0).addChecker(new Checker(true)); // Add a black checker to pip 0
-        pips.get(6).addChecker(new Checker(false)); // Add a blocking checker to pip 6
-        pips.get(10).addChecker(new Checker(true)); // Add a black checker to pip 10
-        dice.rollDice(true);
-        generator.processCommands();
-
-        // Test (1): test for dice command
-        //simulate user input - request new match and then see if the restart flag is set
-        String simulated_IN = "new match\nyes\n";
-        System.setIn(new ByteArrayInputStream(simulated_IN.getBytes()));
-
-        // Test the displayCommands method
-        generator.displayCommands("PlayerName"); // Verify it runs without errors
-
-        // Test (1) Enusure new match command is processed
-        Movement movement = new Movement(dice, pips, turn, bar, false, testFile, playerIDs);
-
-        movement.new_match();
-
-        // Assert that restartFlag is set to true
-        assertTrue(movement.restartFlag, "Restart flag should be true for 'yes' response");
-    }
-
-    // Test ensure that when the user selects no for start a new match that the restart flag is still to false
-    @Test
-    void testStartNewMatch_and_restart() {
-        // Set up
-        String simulatedInput = "Mike\nBob\nX\n";
-        System.setIn(new ByteArrayInputStream(simulatedInput.getBytes()));
-
-        // Initialise
-        ArrayList<Integer> rolls = new ArrayList<>();
-        dice = new Dice(rolls);
-        Player_IDs playerIDs = new Player_IDs(turn, dice, false, null);
-        System.setIn(System.in);
-        Command_Generator generator = new Command_Generator(dice, pips, turn, bar, testFile, false);
-
-        // Populate pips
-        pips.get(0).addChecker(new Checker(true)); // Add a black checker to pip 0
-        pips.get(6).addChecker(new Checker(false)); // Add a blocking checker to pip 6
-        pips.get(10).addChecker(new Checker(true)); // Add a black checker to pip 10
-        dice.rollDice(true);
-        generator.processCommands();
-
-        // Test (1): test for dice command
-        //simulate user input - request new match and then see if the restart flag is set
-        String simulated_IN = "new match\nno\n";
-        System.setIn(new ByteArrayInputStream(simulated_IN.getBytes()));
-
-        // Test the displayCommands method
-        generator.displayCommands("PlayerName"); // Verify it runs without errors
-
-        // Test (1) Enusure new match command is processed
-        Movement movement = new Movement(dice, pips, turn, bar, false, testFile, playerIDs);
-
-        movement.new_match();
-
-        // Assert that restartFlag is set to true
-        assertFalse(movement.restartFlag, "Restart flag should be true for 'yes' response");
-    }
-
-    // Test for calculate score method
-    // Ensures that the score is not null after move is made
-    @Test
-    void testCalculateScore() {
-        // Set up
-        String simulatedInput = "Mike\nBob\nX\n";
-        System.setIn(new ByteArrayInputStream(simulatedInput.getBytes()));
-
-        // Initialise
-        ArrayList<Integer> rolls = new ArrayList<>();
-        dice = new Dice(rolls);
-        Player_IDs playerIDs = new Player_IDs(turn, dice, false, null);
-        System.setIn(System.in);
-        Command_Generator generator = new Command_Generator(dice, pips, turn, bar, testFile, false);
-
-        // Populate pips
-        pips.get(0).addChecker(new Checker(true)); // Add a black checker to pip 0
-        pips.get(6).addChecker(new Checker(false)); // Add a blocking checker to pip 6
-        pips.get(10).addChecker(new Checker(true)); // Add a black checker to pip 10
-        dice.rollDice(true);
-        generator.processCommands();
-
-        // Test (1): test for dice command
-        //simulate user input - request new match and then see if the restart flag is set
-        String simulated_IN = "A\nA\nA";
-        System.setIn(new ByteArrayInputStream(simulated_IN.getBytes()));
-
-        // Test the displayCommands method
-        generator.displayCommands("PlayerName"); // Verify it runs without errors
-
-        // Test (1) Enusure new match command is processed
-        Movement movement = new Movement(dice, pips, turn, bar, false, testFile, playerIDs);
-
-        movement.moveChecker();
-
-        // Calculate the score
-        movement.calculateScore();
-        movement.Display();
-
-        int score = movement.calculateScore();
-        System.out.print("Score: " + score);
-
-        // Assert that the score not null after move is made
-        assertNotNull(movement.calculateScore(), "Score should be calculated");
-    }
-
-
-    // Test restart flag
-    // set restart flag
-    // reset board
-    @Test
-    void returnRestart() throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException {
-        pips.get(2).addChecker(new Checker(true)); // Add a black checker to pip 0
-        pips.get(0).addChecker(new Checker(false)); // Add a blocking checker to pip 23
-
-        String simulatedInput = "Mike\nBob\nX\nA\n";
-        System.setIn(new ByteArrayInputStream(simulatedInput.getBytes()));
-
-        // Initialise
-        ArrayList<Integer> rolls = new ArrayList<>();
-        Dice dice = new Dice(rolls);
-
-        Command_Generator generator = new Command_Generator(dice, pips, turn, bar, testFile, false);
-
-        // Create Player_IDs instance
-        Player_IDs playerIDs = new Player_IDs(turn, dice, false, null);
-
-        // Test (1) Enusure new match command is processed
-        Movement movement = new Movement(dice, pips, turn, bar, false, testFile, playerIDs);
-
-        //simulate user input
-        for (int i = 0; i < 2; i++) {
-            String simulated_IN = "A\nA\nA\nA\nA\nA\nA\nA";
-            System.setIn(new ByteArrayInputStream(simulated_IN.getBytes()));
-
-            // Replace the Scanner in Movement with one reading from the simulated input
-            Field scanField = Movement.class.getDeclaredField("scan"); // Need to bypass the scann in the movement class
-            scanField.setAccessible(true);  //make access possible
-            scanField.set(movement, new Scanner(System.in));
-
-            // change process commands manually to test move checker - use reflection to access private data
-            Method processCommands = Movement.class.getDeclaredMethod("processCommand"); // need to change from the scan user input - to the simulated input
-            processCommands.setAccessible(true);
-
-            // calling the method we are testing  - process commands is being called part of this
-            movement.moveChecker();
-            movement.Display();
-
-            // Manually access the removedCheckers - to check the win condition - reflection for private
-            Field removedCheckers = Movement.class.getDeclaredField("removedCheckers"); // Need to bypass
-            removedCheckers.setAccessible(true);  //make access possible
-            removedCheckers.set(movement, new int[]{14, 0}); // replace with 15 checkers
-
-            movement.moveChecker();
-            movement.Display();
+            dice.setDice(roll1, roll2);
+            System.out.println("Dice set to: " + roll1 + " and " + roll2);
+            return;
         }
 
-        // restart flag should be false
-        assertEquals(false, movement.returnRestart(), "Restart should be false");
+        System.out.println("Invalid command. Please use the format 'dice <number> <number>'.");
+    }
 
-        movement.setRestart(true);
 
-        // change the restart flag to true
-        movement.returnRestart();
+    public void resetBoard()
+    {
+        Pips.clear();
+        Bar.clear();
+        Bar.add(new Pip());
+        Bar.add(new Pip());
+        genCommands.clearCommands();
+        restartFlag = false;
+    }
 
-        // Ensure that there is no movement after calling movececker
-        movement.moveChecker();
+    public boolean returnRestart(){ return restartFlag; }
+    public void setRestart(boolean set) { restartFlag = set;  }
 
-        //no chaneg should be seen in display
-        movement.Display();
-        System.out.println("Restart: " + movement.returnRestart());
+    public void new_match()
+    {
+        boolean flag = false;
+        String response = " ";
 
-        // Ensure that the restart flag is equal to true after being set
-        assertEquals(true, movement.returnRestart(), "Restart should be true");
+        do
+        {
+            System.out.print("Do you want to start a new match? (yes/no): ");
+            if(testMode)
+                response = (testFile.readNext());
+            else
+                response = scan.nextLine().trim();
 
-        // Ensure that the reset flag is false after restart
-        movement.resetBoard();
-        assertEquals(false, movement.returnRestart(), "Restart should be false after reset");
+            if (response.toLowerCase().equalsIgnoreCase("yes"))
+            {
+                System.out.println("Starting a new match...");
+                restartFlag = true;
+                flag = true;
+            }
+            else if(response.toLowerCase().equalsIgnoreCase("no")) {
+                flag = true;
+            }
+
+        }while(!flag);
+    }
+
+    private void doubles()
+    {
+        if(doubleCube ==1 || doubleOwner == turn.returnTurn())
+        {
+            if(doubleCube == 64)
+            {
+                System.out.println("You have reached the maximum factor of the doubles cube.");
+                return;
+            }
+            boolean flag = false;
+            String response = " ";
+
+            do
+            {
+                System.out.println("Does your opponent, " + IDs.returnName(!turn.returnTurn()) + ", want to accept the double cube? (yes/no) ");
+                if(testMode)
+                    response = testFile.readNext();
+                else
+                    response = scan.nextLine();
+
+                if (response.toLowerCase().equalsIgnoreCase("yes"))
+                {
+                    System.out.println("The double cube has changed ownership to " + IDs.returnName(!turn.returnTurn()) + " .");
+                    doubleCube *=2;
+                    doubleOwner = !turn.returnTurn();
+                    flag = true;
+                }
+                else if(response.toLowerCase().equalsIgnoreCase("no"))
+                {
+                    if(doubleCube ==1)
+                        System.out.println("The double cube remains unowned.");
+                    else
+                        System.out.println("The double cube remains in the possession of " + IDs.returnName(turn.returnTurn())+ " .");
+                    flag = true;
+                }
+            }while (!flag);
+        }
+        else
+            System.out.println("You do not have permission to offer doubles at this time.");
 
 
     }
 
+    public boolean findWin()
+    {
+        if(removedCheckers[0]==15)
+            return turn.returnOrientation();
+        else
+            return !(turn.returnOrientation());
+    }
+
+    public int calculateScore()
+    {
+        int cubeValue = doubleCube;
+
+        doubleCube = 1;
+
+        boolean orientationMatch = (findWin() == turn.returnOrientation());
+        int turn_index = (orientationMatch)?0:1;
+
+        int full_pip = 15;
+        if(removedCheckers[turn_index] != full_pip)
+            return 0; //no win
+
+        int opp_index = (orientationMatch)?1:0;
+        boolean opponentBarCheck = (!Bar.get(opp_index).isEmpty());
+
+        boolean opponentHomeCheck = false;
+        int startIndex = orientationMatch ? 0 : 18;
+        int endIndex = orientationMatch ? 6 : 24;
+        for (int i = startIndex; i < endIndex; i++)
+        {
+            if (!Pips.get(i).isEmpty() && Pips.get(i).returnColour() != turn.returnTurn())
+            {
+                opponentHomeCheck = true;
+                break;
+            }
+        }
+
+        int opponentCheckerCount = full_pip - removedCheckers[opp_index];
+
+        if (opponentCheckerCount == full_pip)
+        {
+            if (opponentBarCheck || opponentHomeCheck)
+                return 3*cubeValue; // Backgammon
+
+            return 2*cubeValue; // Gammon
+        }
+
+        return cubeValue; //Single
+    }
+
+    public void Display()
+    {
+        printBoard.printBoardLayout(Pips, turn, Bar);
+    }
 }
