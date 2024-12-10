@@ -11,7 +11,7 @@ class Player_IDsTest {
     //---Test for Player IDs class---------------   | is the method tested|------
     // Test returnname                              | yes
     // Test startRoll                               | yes
-    // Test getPlayerNames                          | no
+    // Test getPlayerNames                          | yes
 
 
     // Test getPlayerNames
