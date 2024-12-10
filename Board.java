@@ -158,29 +158,40 @@ public class Board
 
     public void updateMatchScore(int gameScore)
     {
-        if (!turn.returnTurn())
+        if (movement.findWin() == turn.returnOrientation())
             matchScore[0] += gameScore;
         else
             matchScore[1] += gameScore;
+
+
         System.out.println("Current Match Score: " + IDs.returnName(turn.returnOrientation()) + " " + matchScore[0] + " - " + IDs.returnName(!turn.returnOrientation()) + " " + matchScore[1]);
     }
 
-    public void announceGameResult(int gameScore)
+        public void announceGameResult(int gameScore)
     {
         String resultMessage;
-        if (gameScore == 3) {
-            resultMessage = "Game ends in a Backgammon! " + IDs.returnName(turn.returnTurn()) + " wins 3 points.";
-        } else if (gameScore == 2) {
-            resultMessage = "Game ends in a Gammon! " + IDs.returnName(turn.returnTurn() ) + " wins 2 points.";
-        } else {
-            resultMessage = "Game ends in a Single! " + IDs.returnName(turn.returnTurn() ) + " wins 1 point.";
-        }
+        int cubeValue = movement.returnDouble();
+        gameScore =  gameScore/cubeValue;
+        String user = IDs.returnName(movement.findWin());
+
+        if (gameScore == 3)
+            resultMessage = "Game ends in a Backgammon! " + user + " wins "+ gameScore*cubeValue+" points in total.";
+         else if (gameScore == 2)
+            resultMessage = "Game ends in a Gammon! " + user + " wins "+ gameScore*cubeValue+" points in total.";
+         else
+            resultMessage = "Game ends in a Single! " + user + " wins "+ gameScore*cubeValue+" point(s) in total.";
+
         System.out.println(resultMessage);
+        movement.resetDoubleCube();
     }
 
     public void displayMatchInfo()
     {
         System.out.println("Match Length: " + matchLength);
-        System.out.println("Current Match Score: " + IDs.returnName(turn.returnOrientation()) + " " + matchScore[0] + " - " + IDs.returnName(!turn.returnOrientation()) + " " + matchScore[1]);
+        if(!turn.returnOrientation())
+            System.out.println("Current Match Score: " + IDs.returnName(false) + " " + matchScore[0] + " - " + IDs.returnName(true) + " " + matchScore[1]);
+        else
+            System.out.println("Current Match Score: " + IDs.returnName(false) + " " + matchScore[1] + " - " + IDs.returnName(true) + " " + matchScore[0]);
+
     }
 }

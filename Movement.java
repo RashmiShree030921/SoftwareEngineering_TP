@@ -57,16 +57,10 @@ public class Movement {
     }
 
     public boolean checkWin() {
-        if (turn.returnTurn() == turn.returnOrientation()) {
-            System.out.println("you have won the game");
+        if (turn.returnTurn() == turn.returnOrientation())
             return (removedCheckers[0] == 15);
-
-        }
-        else{
-
+        else
             return (removedCheckers[1] == 15);
-        }
-
     }
 
     private int total_steps = 0;
@@ -89,7 +83,6 @@ public class Movement {
             {
                 int start = nextMove.returnStart();
                 int end = nextMove.returnEnd();
-                System.out.println("Start: " + start + " End: " + end);
 
                 if (turn_flag && start != -1)
                     start = convert2AlterIndex(start);
@@ -150,7 +143,7 @@ public class Movement {
                                     total_steps -= (((start - end) % num_pips) + num_pips) % num_pips;
 
                             }
-                            System.out.println("Moved checker from pip " + start + " to pip " + (end));
+                            //System.out.println("Moved checker from pip " + start + " to pip " + (end));
                             System.out.println("Moves Left: " + total_steps);
                         }
                         if(total_steps >0)
@@ -198,7 +191,7 @@ public class Movement {
         if (returning !=null)
             return returning;
         else if (command.equalsIgnoreCase("pip") )
-            pipCount();
+           pipCount();
         else if (command.equalsIgnoreCase("hint"))
             hint();
         else if (command.startsWith("dice") ) {
@@ -268,6 +261,7 @@ public class Movement {
         Bar.clear();
         Bar.add(new Pip());
         Bar.add(new Pip());
+        removedCheckers = new int[]{0,0};
         genCommands.clearCommands();
         restartFlag = false;
     }
@@ -348,16 +342,17 @@ public class Movement {
     {
         if(removedCheckers[0]==15)
             return turn.returnOrientation();
-        else
+        else if(removedCheckers[1] == 15)
             return !(turn.returnOrientation());
+        System.out.println("error");
+        return false;
     }
+
+    public int returnDouble() { return doubleCube; }
+    public void resetDoubleCube() { doubleCube =1; }
 
     public int calculateScore()
     {
-        int cubeValue = doubleCube;
-
-        doubleCube = 1;
-
         boolean orientationMatch = (findWin() == turn.returnOrientation());
         int turn_index = (orientationMatch)?0:1;
 
@@ -369,28 +364,26 @@ public class Movement {
         boolean opponentBarCheck = (!Bar.get(opp_index).isEmpty());
 
         boolean opponentHomeCheck = false;
+
         int startIndex = orientationMatch ? 0 : 18;
         int endIndex = orientationMatch ? 6 : 24;
+        int count=0;
+
         for (int i = startIndex; i < endIndex; i++)
-        {
-            if (!Pips.get(i).isEmpty() && Pips.get(i).returnColour() != turn.returnTurn())
-            {
-                opponentHomeCheck = true;
-                break;
-            }
-        }
+            if (!Pips.get(i).isEmpty() && Pips.get(i).returnColour() != findWin())
+                count++;
 
-        int opponentCheckerCount = full_pip - removedCheckers[opp_index];
+        opponentHomeCheck = (count==num_pips);
 
-        if (opponentCheckerCount == full_pip)
+        if (removedCheckers[opp_index] != full_pip)
         {
             if (opponentBarCheck || opponentHomeCheck)
-                return 3*cubeValue; // Backgammon
+                return 3*doubleCube; // Backgammon
 
-            return 2*cubeValue; // Gammon
+            return 2*doubleCube; // Gammon
         }
 
-        return cubeValue; //Single
+        return doubleCube; //Single
     }
 
     public void Display()
