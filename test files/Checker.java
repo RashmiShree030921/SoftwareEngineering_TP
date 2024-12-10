@@ -1,6 +1,6 @@
 public class Checker
 {
-    // false for white, true for brown
+    // false for white, true for black
     private boolean colour;
     private String display;
 
