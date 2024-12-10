@@ -10,9 +10,9 @@ class CheckerTest {
         //returnColour                                                          yes
         // returnString;                                                        yes
 
-        // Test case for brown color (true)
-        boolean BlackColour = true;
-        Checker BlackChecker = new Checker(BlackColour);
+        // Test case for black colour - (true)
+        boolean BlackColour = true; // set test boolean to true
+        Checker BlackChecker = new Checker(BlackColour); // create 
 
         // Assert that the checker color matches the input - tests return colour method
         assertEquals(BlackColour, BlackChecker.returnColour(), "Checker should match the input boolean value");
