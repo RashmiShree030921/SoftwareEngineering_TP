@@ -37,6 +37,15 @@ public class PrintBoard {
         return(((num_pips-1-i)%num_pips + num_pips)%num_pips);
     }
 
+    // Calculate the maximum height of the board based on the pip with the most checkers
+    private int calculateMaxHeight(ArrayList<Pip> pips) {
+        int maxHeight = 0;
+        for (Pip pip : pips) {
+            maxHeight = Math.max(maxHeight, pip.returnLength());
+        }
+        return maxHeight;
+    }
+
 
     // BOARD layout
     public void printBoardLayout(ArrayList<Pip> pips, Turn turn, ArrayList<Pip> bar)
@@ -46,9 +55,6 @@ public class PrintBoard {
         String[] checkers = new String[24];
 
         boolean turn_check = turn.returnTurn()==turn.returnOrientation();
-
-        //Take this and check return turn: (if turn is true == black player, else while == white player)
-
 
         // Organize the board numbers and checker positions based on the turn orientation
         if (turn_check) // orientation for player with black checkers
@@ -100,20 +106,27 @@ public class PrintBoard {
         // Print the board layout with the checkers
         System.out.println("\u001B[32m====================|===|====================\u001B[0m");
 
+
+        // max is the max checkers
+        int max = Math.min(calculateMaxHeight(pips),8);
+
         // Print the top half of the board (pips 12-23 or flipped)
-        for (int row = 5; row > 0; row--)
+        // set row to max checkers to print height based on number of checkers
+        int final_index;
+        for (int row = max; row > 0; row--)
         {
+            final_index = 1;
             System.out.print("\u001B[32m| \u001B[0m");
             for (int i = 12; i < 18; i++)
             {
-                printPipRow(checkers[i], row);
+                printPipRow(checkers[i], row,final_index);
             }
             int test = 0;
-            printBar(bar, test, row - 1); // Adjusts for white checkers
+            printBar(bar, test, row - 1, max); // Adjusts for white checkers
 
             for (int i = 18; i < 24; i++)
             {
-                printPipRow(checkers[i], row);
+                printPipRow(checkers[i], row, final_index);
             }
             System.out.println("\u001B[32m|\u001B[0m");
         }
@@ -122,18 +135,20 @@ public class PrintBoard {
         System.out.print("\u001B[32m|\u001B[0m                   \u001B[32m|\u001B[0mBAR\u001B[32m|\u001B[0m                  \u001B[32m|\u001B[0m \n");
 
         // Print the bottom half of the board (pips 0-11 or flipped)
-        for (int row = 1; row <= 5; row++) {
+        for (int row = 1; row <= max; row++)
+        {
+            final_index = max;
             System.out.print("\u001B[32m| \u001B[0m");
             for (int i = 11; i >= 6; i--) {
-                printPipRow(checkers[i], row);
+                printPipRow(checkers[i], row, final_index);
             }
 
 
             int test = 1;
-            printBar(bar, test, row - 1); // Adjusts for black checkers
+            printBar(bar, test, row - 1, max); // Adjusts for black checkers
 
             for (int i = 5; i >= 0; i--) {
-                printPipRow(checkers[i], row);
+                printPipRow(checkers[i], row, final_index);
             }
             System.out.println("\u001B[32m|\u001B[0m");
         }
@@ -147,7 +162,7 @@ public class PrintBoard {
 
 
     // Method to print a row of checkers for a pip
-    private void printPipRow(String checkerDisplay, int row) {
+    private void printPipRow(String checkerDisplay, int row, int finalIndex) {
 
         if (checkerDisplay == null || checkerDisplay.length() < 2) {
             System.out.print(" | ");
@@ -171,7 +186,9 @@ public class PrintBoard {
         }
 
         // Print checker color if exists for this row, otherwise print spaces
-        if (checkerCount >= row) {
+        if(checkerCount > 8 && row ==finalIndex)
+            System.out.print(" " + "+" + " ");
+        else if (checkerCount >= row) {
             System.out.print(" " + checkerColor + " ");
         } else {
             System.out.print(" | ");  // 3-character space
@@ -185,7 +202,7 @@ public class PrintBoard {
         System.out.println(" ".repeat(padding) + title);
     }
 
-    private void printBar(ArrayList<Pip> bar, int test, int index) {
+    private void printBar(ArrayList<Pip> bar, int test, int index, int max) {
         // Check counts for each player's bar
         int count = 0;
         // Assuming bar.get(0) is Player 1 (White) and bar.get(1) is Player 2 (Black)
@@ -193,10 +210,10 @@ public class PrintBoard {
             count = bar.get(test).returnLength(); // Count of checkers
         }
 
-        String[] checkers = new String[5]; // Array for displaying up to 5 checkers (max per pip)
+        String[] checkers = new String[max]; // Array for displaying checkers
 
         // Populate the `checkers` array with individual checker symbols or spaces if empty
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < max; i++) {
             if (i < count) {
                 // Get the colour of the checker
                 checkers[i] = bar.get(test).Display().substring(1, 2);
@@ -207,7 +224,8 @@ public class PrintBoard {
         }
 
         // Print the requested checker at the specified index with formatting
-        if (index >= 0 && index < checkers.length) {
+        if (index >= 0 && index < checkers.length)
+        {
             System.out.printf("\u001B[32m|\u001B[0m%-3s\u001B[32m|\u001B[0m", checkers[index]); // Left-align with width 3
         }
     }

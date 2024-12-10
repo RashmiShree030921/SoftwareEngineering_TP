@@ -86,6 +86,7 @@ public class Board
         System.out.println("The game has started.");
         while(!movement.checkWin() && !movement.returnRestart())
         {
+            movement.setRestart(false);
             displayMatchInfo();
             boolean proceed = false;
 
@@ -106,17 +107,19 @@ public class Board
             updateMatchScore(gameScore);
             announceGameResult(gameScore);
         }
-        else
-            movement.setRestart(false);
 
-        if (matchScore[0] < matchLength || matchScore[1] < matchLength)
+
+        if (matchScore[0] < matchLength && matchScore[1] < matchLength)
         {
-            System.out.println("Starting next game...");
+            if(!movement.returnRestart())
+                System.out.println("Starting next game...");
             initializeGame();
             play();
         }
         else
-            System.out.println("Match over! " + (matchScore[0] >= matchLength ? IDs.returnName(false) : IDs.returnName(true)) + " wins the match!");
+        {
+            System.out.println("Match over! " + (matchScore[0] >= matchLength ? IDs.returnName(turn.returnOrientation()) : IDs.returnName(!turn.returnOrientation())) + " wins the match!");
+        }
 
     }
 
@@ -155,9 +158,11 @@ public class Board
 
     public void updateMatchScore(int gameScore)
     {
-        if (turn.returnTurn()) matchScore[1] += gameScore;
-        else matchScore[0] += gameScore;
-        System.out.println("Current Match Score: " + IDs.returnName(false) + " " + matchScore[0] + " - " + IDs.returnName(true) + " " + matchScore[1]);
+        if (!turn.returnTurn())
+            matchScore[0] += gameScore;
+        else
+            matchScore[1] += gameScore;
+        System.out.println("Current Match Score: " + IDs.returnName(turn.returnOrientation()) + " " + matchScore[0] + " - " + IDs.returnName(!turn.returnOrientation()) + " " + matchScore[1]);
     }
 
     public void announceGameResult(int gameScore)
@@ -166,9 +171,9 @@ public class Board
         if (gameScore == 3) {
             resultMessage = "Game ends in a Backgammon! " + IDs.returnName(turn.returnTurn()) + " wins 3 points.";
         } else if (gameScore == 2) {
-            resultMessage = "Game ends in a Gammon! " + IDs.returnName(turn.returnTurn()) + " wins 2 points.";
+            resultMessage = "Game ends in a Gammon! " + IDs.returnName(turn.returnTurn() ) + " wins 2 points.";
         } else {
-            resultMessage = "Game ends in a Single! " + IDs.returnName(turn.returnTurn()) + " wins 1 point.";
+            resultMessage = "Game ends in a Single! " + IDs.returnName(turn.returnTurn() ) + " wins 1 point.";
         }
         System.out.println(resultMessage);
     }
@@ -176,7 +181,6 @@ public class Board
     public void displayMatchInfo()
     {
         System.out.println("Match Length: " + matchLength);
-        System.out.println("Current Match Score: " + IDs.returnName(false) + " " + matchScore[0] + " - " + IDs.returnName(true) + " " + matchScore[1]);
+        System.out.println("Current Match Score: " + IDs.returnName(turn.returnOrientation()) + " " + matchScore[0] + " - " + IDs.returnName(!turn.returnOrientation()) + " " + matchScore[1]);
     }
-
 }

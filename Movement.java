@@ -44,7 +44,8 @@ public class Movement {
             System.out.println(IDs.returnName(doubleOwner) + " is currently the owner of the double cube.");
         else
             System.out.println("The double cube is currently unowned.");
-        dice.rollDice(true);
+        if(total_steps<=0)
+            dice.rollDice(true);
         genCommands.processCommands();
         genCommands.displayCommands(IDs.returnName(turn.returnTurn()));
     }
@@ -62,13 +63,13 @@ public class Movement {
             return (removedCheckers[1] == 15);
     }
 
+    private int total_steps = 0;
 
     public boolean moveChecker()
     {
         Display();
         populateCommands();
-        int total_steps = genCommands.returnTotalSteps();
-
+        total_steps = genCommands.returnTotalSteps();
 
         boolean turn_flag = (turn.returnTurn() != turn.returnOrientation());
 
@@ -147,18 +148,26 @@ public class Movement {
                         }
                         if(total_steps >0)
                             Display();
+
                         updateCommands(nextMove);
+
                         if(genCommands.returnTotalSteps() <=0)
+                        {
+                            System.out.println("You cannot make anymore valid moves this round. ");
                             break;
+                        }
 
 
-                    } else
+                    } else {
                         System.out.println("No checker to move from pip " + start);
+                        System.exit(0);
+                    }
                 }
             }
 
         }
         dice.clearDice();
+        total_steps = genCommands.returnTotalSteps();
         turn.changeTurn();
 
         return true;
@@ -185,8 +194,12 @@ public class Movement {
            pipCount();
         else if (command.equalsIgnoreCase("hint"))
             hint();
-        else if (command.startsWith("dice") )
+        else if (command.startsWith("dice") ) {
             dice_set(command);
+            Display();
+            populateCommands();
+            total_steps = genCommands.returnTotalSteps();
+        }
         else if(command.equalsIgnoreCase("new match"))
             new_match();
         else if(command.equalsIgnoreCase("doubles"))
@@ -324,14 +337,21 @@ public class Movement {
 
     }
 
+    public boolean findWin()
+    {
+        if(removedCheckers[0]==15)
+            return turn.returnOrientation();
+        else
+            return !(turn.returnOrientation());
+    }
+
     public int calculateScore()
     {
         int cubeValue = doubleCube;
-        turn.changeTurn();
 
         doubleCube = 1;
 
-        boolean orientationMatch = (turn.returnTurn() == turn.returnOrientation());
+        boolean orientationMatch = (findWin() == turn.returnOrientation());
         int turn_index = (orientationMatch)?0:1;
 
         int full_pip = 15;

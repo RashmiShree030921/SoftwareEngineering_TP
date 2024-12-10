@@ -90,11 +90,9 @@ public class Command_Generator
                     nextMove.add(c.getFirst());
 
         }
-        if(nextMove.isEmpty())
-        {
-            System.out.println("You cannot make anymore valid moves this round. ");
+        if(nextMove.isEmpty() && total_steps !=0)
             total_steps =0;
-        }
+
     }
 
     public void updateCommands(Command next)
