@@ -9,3 +9,7 @@ All Classes required to have JUnit test:
 8) Player_IDs
 9) Command
 10) Command_Generator
+
+
+PrintBoard is the display class and as a result it does not have a JUnit test
+Board class is called by main - as a result it does not have a dedicated JUnit test 
