@@ -231,7 +231,10 @@ public class Command_Generator
                         offset = offsets.get(j).get(offset_index);
                         index = ((i+offset)%num_pips + num_pips)%num_pips;
 
-                        dest_index = canMove.canMove(j, index);
+                        if(offset==-1)
+                            dest_index = -2;
+                        else
+                            dest_index = canMove.canMove(j, index);
 
                         //System.out.println("Attempted to move from" + j + "  by " + index + " steps, with offset of "+ offset + "  and original steps " + i + " canMove : "+ dest_index);
 
@@ -269,7 +272,11 @@ public class Command_Generator
 
                             if (sum + rolls.get(roll_index) != move_count)
                             {
-                                offsets.get(j).set(offset_index, offset + i);
+                                if(dest_index ==-1)
+                                    offsets.get(j).set(offset_index, -1);
+                                else
+                                    offsets.get(j).set(offset_index, offset + i);
+
 
                                 if(offsets.containsKey(-1) && (offsets.get(-1).size() >= canMove.barCount()) && canMove.barCount() != 0)
                                     canMove.setBarFlag(false);
@@ -279,7 +286,10 @@ public class Command_Generator
                                 if(offsets.containsKey(-1) && (offsets.get(-1).size() >= canMove.barCount()) && canMove.barCount() != 0)
                                     canMove.setBarFlag(true);
 
-                                offsets.get(j).set(offset_index, offsets.get(j).get(offset_index) - i);
+                                if(dest_index==-1)
+                                    offsets.get(j).set(offset_index, 0);
+                                else
+                                    offsets.get(j).set(offset_index, offsets.get(j).get(offset_index) - i);
 
                                 if (!select.isEmpty())
                                 {

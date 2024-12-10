@@ -18,7 +18,8 @@ public class Move_Check
 
     public void updateBarFlag()
     {
-        if(turn.returnTurn() == turn.returnOrientation()) {
+        if(turn.returnTurn() == turn.returnOrientation())
+        {
             if (!Bar.getFirst().isEmpty())
                 barFlag = true;
             else
