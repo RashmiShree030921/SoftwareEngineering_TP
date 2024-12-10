@@ -38,13 +38,18 @@ class Move_CheckTest {
         Bar.add(new Pip()); // Bar[1] for orientation != turn
 
         Turn turn = new Turn();
-        turn.setTurn(true, true);  // Turn with matching orientation
+        turn.setTurn(true, true);  // Turn with matching orientation (both true for black checkers)
         Move_Check moveCheck = new Move_Check(Pips, turn, Bar);
 
         // Test when Bar is empty - check what happens to update bar flag when bar is empty
         moveCheck.updateBarFlag();
+
+        // Test (1) - Bar is empty - try return bar flag
+        // Bar is empty, so barFlag should be false when Bar is empty
         assertFalse(moveCheck.returnBarFlag(), "Bar flag should be false when Bar is empty.");
 
+
+        // Test (2) - Bar is not empty - try return bar flag
         // Test when Bar has checkers
         Pip pip = new Pip();
         pip.addChecker(new Checker(true)); // Add a checker to the pip
@@ -52,14 +57,19 @@ class Move_CheckTest {
         moveCheck.updateBarFlag();
         assertTrue(moveCheck.returnBarFlag(), "Bar flag should be true when Bar has checkers.");
 
+        // Test (3) - Test the Bar flag when Bar flag is set manually using setBarFlag
         moveCheck.setBarFlag(true);
+
+        // return bar flag should return true when barFlag is manually set to true
         assertTrue(moveCheck.returnBarFlag(), "Should return true when barFlag is manually set to true.");
 
+        //reaturn bar flag should return false when barFlag is manually set to false
         moveCheck.setBarFlag(false);
         assertFalse(moveCheck.returnBarFlag(), "Should return false when barFlag is manually set to false.");
     }
 
     // Test for setBarFlag and returnBarFlag
+    // Test that set bar works when manually setting flag to both true and false
     @org.junit.jupiter.api.Test
     void testSetBarChecker_and_ReturnBarChecker() {
         // Create mock data for Pips and Bar
@@ -72,17 +82,21 @@ class Move_CheckTest {
         turn.setTurn(true, true);  // Turn with matching orientation
         Move_Check moveCheck = new Move_Check(Pips, turn, Bar);
 
-        // Test for setting and returning Bar Checker
+        // Test (1) for setting and returning Bar Checker
         Pip pip = new Pip();
         pip.addChecker(new Checker(true)); // Add a checker to the pip
         moveCheck.setBarFlag(true);
+
+        // return bar flag should return true when barFlag is manually set to true
         assertEquals(true, moveCheck.returnBarFlag(), "Bar checker should be set to the pip.");
 
         moveCheck.setBarFlag(false);
+        // return bar flag should return false when barFlag is manually set to false
         assertEquals(false, moveCheck.returnBarFlag(), "Bar checker should be set to the pip.");
     }
 
     // Test the convert2AlterIndex method
+    // test that the method returns the correct index when i is given
     @org.junit.jupiter.api.Test
     void testConvert2AlterIndex() {
         // Create mock data for Pips and Bar
@@ -96,9 +110,12 @@ class Move_CheckTest {
         Move_Check moveCheck = new Move_Check(Pips, turn, Bar);
 
         // Test for convert2AlterIndex
-        //assertEquals(23, moveCheck.convert2AlterIndex(1), "Should return 23 when i = 1");
+        // Test 1 and (2) check that the method returns the correct index when i is given - valid entry for i
         assertEquals(0, moveCheck.convert2AlterIndex(23), "Should return 0 when i = 23");
         assertEquals(1, moveCheck.convert2AlterIndex(22), "Should return 1 when i = 22");
+
+        // Tests show that method is working correcting - cannot test for index outside of range as method has no error handling
+        // This is done before calling method in Movement class
     }
 
     //Test for homecheck
@@ -119,10 +136,14 @@ class Move_CheckTest {
         for (int i = 0; i < 24; i++) {
             Pips.add(new Pip());
         }
+
+        // Test (1) - see what happens when there are no checkers outside home area
+        // should return true when there are no checkers outside home area
         assertTrue(moveCheck.homeCheck(), "Should return true when there are no checkers outside home area.");
 
-        // Test when there are checkers outside home area
+        // Test (2)  when there are checkers outside home area
         Pips.get(0).addChecker(new Checker(true)); // Add a checker to the first pip
+        // should return false when there are checkers outside home area
         assertFalse(moveCheck.homeCheck(), "Should return false when there are checkers outside home area.");
     }
 
@@ -174,14 +195,22 @@ class Move_CheckTest {
         for (int i = 0; i < 24; i++) {
             Pips.add(new Pip());
         }
+
+        // Test Case 1: No checkers outside home area
         assertTrue(moveCheck.homeCheck(), "Should return true when there are no checkers outside home area.");
 
-        // Test when there are checkers outside home area
+        // Test 2: Valid moves off the board for Black
+        Pips.get(23).addChecker(new Checker(true)); // Add a checker to the last pip
+        int from_pip2 = 23; // Last position in the home area
+        int steps2 = 1; // Two steps to move off the board
+        assertTrue(moveCheck.canMoveOff(from_pip2, steps2), "Should return true for a valid move off the board.");
+
+        // Test (3) when there are checkers outside home area
         Pips.get(0).addChecker(new Checker(true)); // Add a checker to the first pip
         assertFalse(moveCheck.homeCheck(), "Should return false when there are checkers outside home area.");
 
 
-        // Test Case 2: Invalid move off the board for white
+        // Test Case (4): Invalid move off the board for Black
         int from_pip = 0; // Second last position in the home area
         int steps = 2; // Two steps to move off the board
         assertFalse(moveCheck.canMoveOff(from_pip, steps), "Should return false for an invalid move off the board.");
@@ -192,7 +221,7 @@ class Move_CheckTest {
     // Test for canMove method
     ////checks if move can be made - returns index of destination pip
     // will return an index of -2 if cannot be done
-    // Test not including testmode (as testmode is tested seperately in tesfile)
+    // Test for invalid moves is not tested in this method
     @org.junit.jupiter.api.Test
     void testCanMove() {
         // Initialise Pips
@@ -211,7 +240,7 @@ class Move_CheckTest {
         Pips.get(5).addChecker(new Checker(false)); // Block position 5
         Pips.get(10).addChecker(new Checker(true)); // Place another checker at position 10
 
-        // Initialise Turn (white's turn with matching orientation)
+        // Initialise Turn (Black's turn with matching orientation)
         Turn turn = new Turn();
         turn.setTurn(true, true); // Matching orientation for white
 
@@ -229,6 +258,8 @@ class Move_CheckTest {
 
         from_pip = -1; // Checker on the bar
         steps = 2; // Move to position 2
+
+        // Should return to 2 cos checker cannot move to blocked pip
         assertEquals(-2, moveCheck.canMove(from_pip, steps), "Checker cannot land on blocked pip."); // error message
 
     }
