@@ -108,7 +108,7 @@ public class PrintBoard {
 
 
         // max is the max checkers
-        int max = Math.min(calculateMaxHeight(pips),8);
+        int max = Math.min(calculateMaxHeight(pips), 9);
 
         // Print the top half of the board (pips 12-23 or flipped)
         // set row to max checkers to print height based on number of checkers
@@ -186,7 +186,7 @@ public class PrintBoard {
         }
 
         // Print checker color if exists for this row, otherwise print spaces
-        if(checkerCount > 8 && row ==finalIndex)
+        if(checkerCount > 8 && row >= finalIndex)
             System.out.print(" " + "+" + " ");
         else if (checkerCount >= row) {
             System.out.print(" " + checkerColor + " ");
