@@ -70,7 +70,7 @@ class Command_GeneratorTest {
         assertNotNull(selectedCommand, "Selected command should not be null.");
         assertTrue(nextMove.contains(selectedCommand), "Selected command should be in nextMove.");
 
-        // Test (2) invalid command - ennerting a command that is not in the list
+        // Test (2) invalid command - random character 
         String invalidCommand = "-";
         Command invalidSelection = generator.selectCommand(invalidCommand);
         assertNull(invalidSelection, "Invalid command should return null.");
